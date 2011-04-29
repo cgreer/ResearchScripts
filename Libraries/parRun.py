@@ -12,11 +12,20 @@ def parRun(numParts, memoryAmount, scriptName, *args):
                 qDo = '%s/exec/qDo.sh' % (os.environ['HOME'])
 
                 #construct command to pass
-                com = [qJobX, qDo, scriptName]
+                if memoryAmount == 'LOCAL':
+                        com = [qDo, scriptName]
+                else:
+                        com = [qJobX, qDo, scriptName]
+                
+                #append script arguments
                 for arg in args:
                         com.append(arg)
-                com.append(str(i))
-                com.append(str(numParts))
+                
+                #append packet running info
+                if numParts != 1:
+                        com.append(str(i))
+                        com.append(str(numParts))
+                
                 #run each job
                 subprocess.Popen(com).wait()
         

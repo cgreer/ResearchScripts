@@ -1,0 +1,167 @@
+[TABLE OF CONTENTS]
+
+I. Overview of what program does
+II. Essential changes to get program to run
+III. Explaining the configuration file
+IV. Explanation of important program modules and functions.
+	A. Downloading Data/Storing in Mysql.
+	B. Generating Gene Models
+		i) generateGeneModels
+		ii) checkElements
+		iii) checkGeneModels
+	C. Filtering Gene Models
+		i) tweak_non_canonical
+		ii) remove_by_coverage_and_ss
+		iii) remove_non_canonical
+	D. Classifying Events
+		i) Spliced Exon (SE)
+		ii) Alternative 3ss (A3SS)
+		iii) Alternative 5ss (A5SS)
+		iv) Constitutive Exon (CE)
+		v) Constitutive Intron (CI)
+		vi) Multiple Skipped Exon (MSE)
+		vii) Mutually Exclusive Exon (MXE)
+		viii) Retained Intron (RI)	
+V. Known Errors
+
+-------------------------------------------------------------------------------------------------------
+
+I. What the Progam does:
+	1) Downloads known gene, mRNA, and EST data from UCSC genome browser and stores in mysql databases
+	2) Creates gene models given the previous data (Gene models include 5'ss, 3'ss, Transcription start and end sites; basically it defines where all the introns and exons are)
+	3) Filters the gene models to remove Non canonical splice sites and genes that don't have enough data evidence (see below for 'coverage')
+	4) Visualizes gene models in the form of a postscript file using pydot (dot graph language). NOTE: This part is a little buggy.
+	5) Classifies splicing events.  Splicing events inform you if an exon is constituitive or mutually exclusive; whether there are alternative 3' ro 5' splice sites and more (see classifier.py for more info)
+
+
+II. ESSENTIALS TO GET THE PROGRAM RUNNING:
+	1) Choosing what to run (chromosomes, species, genome build) is done in the configuration file
+	2) The directories where the Raw, Meta, and Flat file data MUST BE CREATED on the local machine and configured in the config file (RawDataStorage, etc) before running
+	3) A "BASES" directory including stripped down Fasta files (No header or '\n' in file) of all chr for the species must be made and directory defined in GenomeFetch.py
+	4) A mysql database for the ASSEMBLY (not species) and a user has to be created.  The mysql info has to be configured in config file.  NOTE: There must be no password for the user.
+	5) In 'do_complete_pipeline.py' under 'global variables' section, the species has to be changed to the correct species in order for it to run.
+	6) There is a TranscriptExcludeList in the main file directory that is blank.  If you want to exclude EST transcripts, put their name in the file seperated by tabs.
+	
+III. Explaining Configuration File:
+	1) Raw, Meta, and FlatFilesStoragePath have to be created on the local machine before running.
+	2) Running specific chromosomes can be accomplished by writing chr# and seperating with commas (e.g. chr1,chr2)
+	3) StandardEvents is a list of the events that you want to be classified
+	4) MinIntronLength: Introns less than 32 bp will be excluded
+	5) MinESTEndLength: The ends of the EST have to be long enough to be considered useful for splice site consideration.  Note: EST ends are NEVER used to classify Transcription Start Sites or Transcription End Sites (Only known genes and mRNA transcripts are used for that)
+	6) FilterMinCoverage: The "coverage" refers to the amount of evidence needed for a splice site to be included in the gene model.  For example, if only one EST transcript is availible for a 5'ss then it will be ommitted if coverage is '2'
+
+IV. Important Modules and Functions:
+
+	A. Downloading Data/Storing in Mysql
+		-All data is downloaded from the UCSC Genome Browser (The download path is in the configuration file)
+		-To store it in mysql, a SHELL SCRIPT (import2mysql_tab.sh) is called.  NOTE: Although there is a mysql python module, it is NOT USED.
+		-The shell script decompressed the .sql file downloaded from UCSC, and places it in a mysql table by using the command line interface
+
+	B. Generating Gene models (generate_splice_graphs.py)
+	
+		i) generateGeneModels
+			- This is the main function used to create models for each gene.  
+			1) Sorts all TSSs by chromosome coordinate
+			2) Beginning with the first TSS (Transcription Start Sequence), a gene is created by extending the TSS until it reaches a TES (Transcription End Sequence).  Extending means it collects all elements that are considered part of that gene by analyzing each elements connections.  Any element that is connected to the TSS (or an element connected to the TSS and so forth) is included as part of the gene.
+			3) The next TSS is analyzed to create another gene.  If any of the gene elements are part of another gene, the two genes are fused.
+			4) All genes models are created once all TSSs have been extended.
+			
+		ii) checkElements
+			1) Checks if each element type is unique.  For e.g., A TSS should NOT BE a 5'ss or TES.  A 5'ss should not be a 3'ss.  In reality there seems to be a lot of ESTs that give evidence to some being both 3ss and 5ss?
+			
+		iii) checkGeneModels
+			1) Checks for short introns and notifies user!!
+			2) Checks if an each element belongs solely to ONE GENE ONLY
+			3) Checks if all elements are on the SAME STRAND
+			
+	C. Filtering Gene Models (Methods in SpliceGraph.py)
+		
+		i) tweak_non_canonical
+			1) Checks for introns that don't start with 'GT/GC' 5ss or end with 'AG' 3ss
+			2) If they don't, it shifts the intron left and right until a canonical 5ss and 3ss are found.
+			3) It then checks to make sure the new sites fit the sequence data.
+			4) The filtered model is then stored in its own folder
+			
+		ii) remove_by_coverage_and_ss
+			1) Checks if the 5ss or 3ss has enough evidence and is canonical
+			2) If it isn't, the element is removed and any isolated elements connected to it on the graph are also removed.
+			
+		iii) remove_non_canonical
+			1) Checks if 5ss or 3ss is canonical
+			2) If it isn't, the element is removed and any isolated elements connected to it on the graph are also removed. !!
+			
+	D. Classifying Events (Classifier.py)
+	
+		i) Spliced Exons (SE)
+			                B                 A               C               D
+			[===============]-----------------[===============]---------------[===============]
+			- Finds Exons that are spliced out of transcript
+			1) Starts by finding a 3'ss (the exon start)[A]
+			2) Locates the 5'ss upstream (upstream 5ss)[B]
+			3) Locates 5ss downstream from exon start (exon end)[C]
+			4) Locates exon starts connected to the exon end [D]
+			5) If B and D are directly connected then it IS A SPLICED EXON.
+			
+		ii) Alternative 3ss (A3SS)
+			                A                 B B'            C               
+			[===============]-----------------[===============]---------------[===============]
+			- Finds alternative 3ss events.
+			1) Starts with an upstream 5'ss [A]
+			2) Locates ALL DIRECTLY CONNECTED downstream 3ss to the 5ss (This is where the A3SS is, may be more than one...) [B][B']
+			3) For Every 3ss [B], it locates ALL DIRECTLY CONNECTED downstream 5ss (exon ends)[C]
+			4) If a downstream 5ss [C] has more than one [B] element at this point, [B] is a A3SS (This is a little counterintuitive.  Looking at the code makes it easier as well as drawing it out.)
+			NOTE: For [B] to be an A3SS, Must have same [A] and [C]
+			
+		iii) Alternative 5ss (A5SS)
+			                                  A             B B'              C         
+			[===============]-----------------[===============]---------------[===============]
+			1) This works the same as the A3SS except that it starts with an upstream 3ss. [A]
+			
+		iv) Constitutive Exon (CE)
+			                                  A               B                
+			[===============]-----------------[===============]---------------[===============]
+			-Finds exons that are always included in the mRNA (Constitutive)
+			NOTE: There are two types: IntronStrict and regular.  IntronStrict just means that there are only SINGLE FLANKING INTRONS.
+			1) Create a coverage map for the gene.  A coverage map is a list with numbers corresponding to overlap between elements.  For each base position, a +1 is added for every element that occupies that position ([1,1,1,2,2,2,2,2,1,1,1,1,])
+			2) Start with an exon start 3ss [A]
+			3) Locate ALL DIRECTLY CONNECTED downstream exon ends 5ss [B]
+			4) Check if there is only one [B] for the [A]
+			5) For every base position in the exon, check the coverage map and make sure that each position has a '1' in it.  This means that only one element 'covers' this area of the gene.
+			
+		v) Constitutive Intron (CI)
+			                A                 B                               
+			[===============]-----------------[===============]---------------[===============]
+			-This is done the same way as the CE event except the the process starts with an intron start A and locates all B's
+			
+		vi) ?????? Multiple Skipped Exon (MSE) ??????? (I'M NOT SURE HOW THIS WORKS?)
+			                C                                 A               B                             D
+			[===============]-----------------[===============]---------------[===============]-------------[===============]
+			- Finds two or more exons that are skipped in at least one transcript
+			1) Start with exon end that is directly connected to an exon beginning [A][B]
+			2) Check if the upstream 5ss is connected???
+			
+		vii) Mutually Exclusive Exon (MXE)
+			                A               start1           end1           start2           end2           B
+			[===============]-----------------[===============]---------------[===============]-------------[===============]
+			- Finds exon pairs that have an "either/or" relationship: if one is included the other is not.
+			1) The end of an UPSTREAM EXON (5ss) is first obtained. [A]
+			2) If this end [A] has more than one directly connected downstream elements ([start1][start2]), Mutual exclusiveness is checked
+			3) A "candidate list" is created containing all exons between [A] and [B] whose exon start is connected to [A] and exon end is connected to [B].  These are the exons that are possibly mutually exclusive.
+			4) Each candidate is checked to make sure that it does not overlap with other exons.
+			5) If it fulfills these requirements, it is Mutually Exclusive.
+			
+		viii) Retained Intron (RI)
+			                                  C               A               B               D              
+			[===============]-----------------[===============]---------------[===============]-------------[===============]
+			- Finds introns that are retained in the mRNA.  These are introns that become part of an exon, or introns that aren't spliced out.
+			1) Start with the 5ss of an intron and its corresponding 3ss [A] and [B]
+			2) Find the upsteam element of the intron start [C] and downstream element of the intron end [D]
+			3) If [C] and [D] are directly connected in at least one transcript, this is a retained intron event
+			
+V. Known Errors
+	1) The metainformation(gbCdna table) is not loaded into mysql correctly. unzipping it fails....
+	2) For chromosome 14 in hsa (hg18) classification causes a bug.  I think it is MSE that causes it to bug?
+	3) A lot of the visualization doesn't work because the splice graphs are too big.  If needed, the splicegraph visualization method has to be tweaked.
+
+VI. Misc
+	1) There are two additions to classification: CIP and CEP.  These are exactly the same as CI and CE except the downstream and upstream connected elements are included.

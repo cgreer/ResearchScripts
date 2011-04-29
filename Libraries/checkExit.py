@@ -11,7 +11,7 @@ def checkExit(fN, numPackets):
         if os.environ['PWD'] not in dirName:
                 dirName = os.path.dirname(os.environ['PWD'] + '/' + fN)
  
-        sleepTime = 20
+        sleepTime = 10
         iteration = 1
         while True:
 

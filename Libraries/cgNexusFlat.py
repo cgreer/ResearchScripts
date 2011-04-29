@@ -164,7 +164,7 @@ class Nexus:
 		for attName in attNames:
 			self.bindAttribute(attName)
 
-                print 'done loading', self._dataFileName
+                #print 'done loading', self._dataFileName
 
 
 	def save(self, outFN = None):

@@ -1,5 +1,24 @@
 import bioLibCG
 
+def loadSingleWig(wigDir, chrom, strand, prefix):
+
+        coord_value = {}
+        fN = wigDir + '/%s.%s.%s.wig' % (prefix, chrom, strand)
+        f = open(fN, 'r')
+        f.readline()
+        for line in f:
+                ls = line.strip().split('\t')
+                start, end, expr = int(ls[1]), int(ls[2]) - 1, int(ls[3])
+
+                if expr == 0: continue
+                
+                for i in range(start, end + 1):
+                        coord_value[i] = expr
+        f.close()
+
+        return coord_value
+
+
 def loadWig(wigDir):
         '''Wig files in a directory must be a certain file format: NAME.chr.strand.wig'''
 
