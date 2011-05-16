@@ -18,14 +18,49 @@ def loadSingleWig(wigDir, chrom, strand, prefix):
 
         return coord_value
 
+def loadSingleWigContext(wigDir, chrom, strand, prefix):
 
-def loadWig(wigDir):
+        coord_value = {}
+        fN = wigDir + '/%s.%s.%s.wig' % (prefix, chrom, strand)
+        f = open(fN, 'r')
+        f.readline()
+        for line in f:
+                ls = line.strip().split('\t')
+                start, end, expr = int(ls[1]), int(ls[2]) - 1, ls[3]
+
+                if expr == 'INTER': continue
+                
+                for i in range(start, end + 1):
+                        coord_value[i] = expr
+        f.close()
+
+        return coord_value
+
+def loadSingleWigTranscript(wigDir, chrom, strand, prefix):
+
+        coord_value = {}
+        fN = wigDir + '/%s.%s.%s.wig' % (prefix, chrom, strand)
+        f = open(fN, 'r')
+        f.readline()
+        for line in f:
+                ls = line.strip().split('\t')
+                start, end, expr = int(ls[1]), int(ls[2]) - 1, ls[3]
+
+                if expr == 'None': continue
+                
+                for i in range(start, end + 1):
+                        coord_value[i] = expr
+        f.close()
+
+        return coord_value
+
+def loadWigDict(wigDir):
         '''Wig files in a directory must be a certain file format: NAME.chr.strand.wig'''
 
         chr_strand_coord_expr = {}
         
         for fN in bioLibCG.recurseDir(wigDir, end = '.wig'):
-
+                print fN
                 chrom, strand = fN.split('.')[1], fN.split('.')[2]
 
                 chr_strand_coord_expr.setdefault(chrom, {})[strand] = {}
@@ -43,6 +78,7 @@ def loadWig(wigDir):
 
         return chr_strand_coord_expr
 
+
 def getExpressionProfile(tcc, wigDict):
         '''assume 1 based'''
 
@@ -58,4 +94,7 @@ def getExpressionProfile(tcc, wigDict):
 
 if __name__ == "__main__":
         import sys
-        bioLibCG.submitArgs(globals()[sys.argv[1]], sys.argv[1:])
+        if sys.argv[1] == "help":
+                bioLibCG.gd(sys.argv[0])
+        else:
+                bioLibCG.submitArgs(globals()[sys.argv[1]], sys.argv[1:])

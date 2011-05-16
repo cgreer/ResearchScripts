@@ -281,6 +281,69 @@ def filterOutTccs(tccList, tccDirectory, getFilteredOut = False):
 			tccList.remove(tcc)
 		return tccList
 
+'''
+def subtractTwoRanges(keeperRange, otherRange):
+	startK = keeperRange[0]
+	endK = keeperRange[1]
+	
+	startO = otherRange[0]
+	endO = otherRange[1]
+	
+		
+        #put them all in list
+        linearList = []
+        linearList.extend([int(startK), int(endK)])
+        if int(startO) not in linearList: linearList.append(int(startO))
+        if int(endO) not in linearList: linearList.append(int(endO))
+        linearList.sort()
+       
+        print linearList
+
+        if startO == startK:
+                same = True
+        else:
+                same = False
+                
+        #initalize if keeping or cutting first.
+        if same:
+                i = 0
+                keep = False
+        elif linearList[0] == int(startK):
+                i = 0
+                keep = True
+                #print 'keep'
+        else:
+                i = 1 #if 0 wasn't the known start, 1 is
+                keep = False
+                #print 'cut'
+        
+        #print linearList
+        
+        returnList = []
+        while True:
+                if keep: #keep this section of coords
+                        newStart = linearList[i]
+                        newEnd = linearList[i + 1]
+                        if not str(newStart) == startK:# Isn't initial beginning, add one
+                                newStart = newStart + 1
+                        if str(newEnd) != endK:# the end isn't the final end, subtract one
+                                newEnd = newEnd - 1
+                                
+                        returnList.append((newStart, newEnd))
+                        if str(linearList[i+1]) == endK:
+                                break
+                        keep = False
+                        
+                else: #skip this section of coords
+                        if str(linearList[i+1]) == endK:
+                                break
+                        keep = True #flip the keep/cut switch
+                
+                i = i + 1
+                
+        return returnList
+'''
+
 def subtractTwoTcc(keeperTcc, otherTcc):
 	'''returns list of tcc coordinates after subtracting the second from the first.'''
 	chromK = keeperTcc.split(':')[0]
@@ -346,6 +409,7 @@ def subtractTwoTcc(keeperTcc, otherTcc):
 			
 		return returnList
 
+
 def recurseSubtract(sList, otherList):
 	'''When a tcc is subtracted, it's subtraction must be subtracted 
 	with all the other tcc's in otherlist.  The best way to do this is
@@ -405,7 +469,109 @@ def subtractTwoTccLists(tccListKeep, tccListOther):
 	newSeqs.extend(subList)
 	
 	return newSeqs
-				
+
+def subtractTwoRanges(rangeKeep, rangeOther):
+        '''rangeKeep is a list of ranges, rangeOther is a list of ranges'''
+        '''Im not sure if rangeOther can overlap for this to work...should union them first...'''
+
+        #take care of empty ranges
+        if len(rangeKeep) == 1 and not rangeKeep[0]:
+                return list()
+
+        if len(rangeOther) == 1 and not rangeOther[0]:
+                return rangeKeep
+
+        coord_type = {}
+        #annotate keep
+        for left, right in rangeKeep:
+                #overlap with each otherPair
+                if not rangeOther:
+                        coord_type[left] = 1
+                        coord_type[right] = 5
+                
+                for oLeft, oRight in rangeOther:
+                        #left
+                        if bioLibCG.simpleOverlap(left, left, oLeft, oRight):
+                                #same as coord
+                                if left == oLeft:
+                                        if coord_type.get(left, 0) < 2:
+                                                coord_type[left] = 2
+                                
+                                elif left == oRight:
+                                        if coord_type.get(left, 0) < 2:
+                                                coord_type[left] = 3
+                                
+                                else:
+                                        coord_type[left] = 4
+                        else:
+                                if coord_type.get(left, 0) < 1:
+                                        coord_type[left] = 1
+                        
+                        #right
+                        if bioLibCG.simpleOverlap(right, right, oLeft, oRight):
+                                #same as coord
+                                if right == oLeft:
+                                        if coord_type.get(right, 0) < 2:
+                                                coord_type[right] = 2
+                                
+                                elif right == oRight:
+                                        if coord_type.get(right, 0) < 2:
+                                                coord_type[right] = 3
+                                
+                                else:
+                                        coord_type[right] = 4
+                        else:
+                                if coord_type.get(right, 0) < 1:
+                                        coord_type[right] = 5
+
+        #annotate other
+        for left, right in rangeOther:
+                for kLeft, kRight in rangeKeep:
+                        
+                        #left
+                        if left == kLeft or left == kRight:
+                                pass
+                        else:
+                                if bioLibCG.simpleOverlap(left, left, kLeft, kRight):
+                                        coord_type[left] = 2
+                        #right
+                        if right == kLeft or right == kRight:
+                                pass
+                        else:
+
+                                if bioLibCG.simpleOverlap(right, right, kLeft, kRight):
+                                        coord_type[right] = 3
+ 
+
+        returnList = []
+        #get cut coords
+        sortedKeys = sorted(coord_type.keys())
+        #print zip(sortedKeys, [coord_type[x] for x in sortedKeys])
+        for i, key in enumerate(sortedKeys):
+                if i == 0: continue
+                
+                a = coord_type[sortedKeys[i - 1]]
+                b = coord_type[key]
+                if (a, b) in [(1,2), (3,5), (1,5), (3,2)]:
+                        #move by one
+                        left = sortedKeys[i-1]
+                        right = key
+                        if a == 2:
+                                left = left - 1
+                        elif a == 3:
+                                left = left + 1
+
+                        if b == 2:
+                                right = right - 1
+                        elif b == 3:
+                                right = right + 1
+                        
+                        returnList.append((left, right))
+
+        return returnList                                        
+
+
+
 if __name__ == "__main__":
         import sys
         bioLibCG.submitArgs(getIndividualOverlaps, sys.argv)

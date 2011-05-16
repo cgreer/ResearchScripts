@@ -8,7 +8,7 @@ def blankIDs(fN, outFN, numIDs = None):
         else:
                 numIDs = bioLibCG.getNumFileLines(fN)
 
-       
+        
         newLines = []
         for i in xrange(0, numIDs):
                 newLines.append('%s\n' % i)
@@ -17,26 +17,7 @@ def blankIDs(fN, outFN, numIDs = None):
         f.writelines(newLines)
         f.close()
 
-def addIDs(fN, outFN):
-        '''Add IDs to the first column'''
         
-
-        newLines = []
-        f = open(fN, 'r')
-        i = 0
-        for line in f:
-                ls = line.strip().split('\t')
-                newLines.append('%s\t%s\n' % (i, '\t'.join(ls)))
-
-                i += 1
-        f.close()
-
-        f = open(outFN, 'w')
-        f.writelines(newLines)
-        f.close()
-        
-
 if __name__ == "__main__":
         import sys
-        bioLibCG.submitArgs(globals()[sys.argv[1]], sys.argv[1:])
-        
+        bioLibCG.submitArgs(blankIDs, sys.argv)

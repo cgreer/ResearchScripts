@@ -160,13 +160,13 @@ def recurseDir(directory, start = None, within = None, end = None, finalFiles = 
         for d in dirs:#if it's a directory, go through that directory
                 
 
-                for f in recurseDir(directory + '/' + d, start, end, finalFiles, top = False):
+                for f in recurseDir(directory + '/' + d, start, within, end, finalFiles, top = False):
                         if f not in finalFiles:
                                 finalFiles.append(f)
                                 #print 'd append', f
 				
         for f in dirFiles:
-                if start or end:
+                if start or end or within:
                         check = True
                         if start:
                                 if not f.startswith(start):
@@ -778,3 +778,13 @@ def prettyTime(s):
         minutes = lH / 60
         lM = lH % 60
         return '%sh %sm %.1fs' % (hours, minutes, lM)
+
+def expandTcc(tcc, amount):
+        chrom, strand, start, end = tccSplit(tcc)
+        start = start - amount
+        end = end + amount
+        return makeTcc(chrom, strand, start, end)
+
+def gd(fN):
+        
+        subprocess.Popen(['gd.sh', fN])

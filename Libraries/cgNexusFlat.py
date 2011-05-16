@@ -189,13 +189,6 @@ class Nexus:
 			ls = line.strip().split('\t')
 			id = int(ls[0])
                         
-                        #skip those that weren't selected and in range
-                       
-                        ''' #I'm not sure I want to only write the ones with conditions...
-                        if self._conditions:
-                                if id not in self._selectedIDs: continue
-			'''
-
                         #stop checking for ids once out of range
                         if self._rangeSpecified:
 				if id > self._rangeSpecified[1]: break
@@ -204,7 +197,8 @@ class Nexus:
 			for attName in self._selectedAttNames:
 				newVal = self._attName_casteToFxn[attName](self._attName_id_value[attName][id])
 				ls = lineUpdate(ls, newVal, self._attName_columnPosition[attName])
-			
+
+                        #only one newLine no matter the amount of attributes updated	
 			newLines.append('%s\n' % '\t'.join(ls))
 		f.close()
 

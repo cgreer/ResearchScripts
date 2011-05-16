@@ -14,7 +14,7 @@ def markCenterExpression(aFN, wigDir, rn = None, tn = None):
         aNX.load(['centerExpression', 'tTcc', 'tStart', 'sLength'], [rn, tn])
         
         #load expression of degradome
-        wigDict = cgWig.loadWig(wigDir)
+        wigDict = cgWig.loadWigDict(wigDir)
         
         for aID in aNX.centerExpression:
                 aNX.centerExpression[aID] = [0.0, 0.0, 0.0]      

@@ -6,8 +6,7 @@ import subprocess
 
 #fN and Init
 oFN = sys.argv[1]
-aFN = sys.argv[2] 
-aFilteredFN = aFN  #+ '.filtered'
+aFN = sys.argv[2] #this is the filtered ONE! 
 
 timer = bioLibCG.cgTimer()
 timer.start()
@@ -15,8 +14,7 @@ timer.start()
 
 #link oRNA to filteredTargets
 print 'linking oRNA to filtered targets'
-parRun(1, 'LOCAL', '/home/chrisgre/scripts/endoClip/siRnaPredictFlat.py', 'updateTargetIDsFiltered', oFN, aFilteredFN)
-#parClean(oFN, 30)
+parRun(1, 'LOCAL', '/home/chrisgre/scripts/endoClip/siRnaPredictFlat.py', 'updateTargetIDsFiltered', oFN, aFN)
 print timer.split()
 
 

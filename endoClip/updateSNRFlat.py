@@ -12,7 +12,8 @@ def updateAvgNumTargets(oFN):
 
         for i in range(0,10):
                 
-                simFN = '/home/chrisgre/scripts/simulations/simsk50FilteredMasked/simulation.%s/%s' % (i, bn)
+                #simFN = '/home/chrisgre/scripts/simulations/simsk50FilteredMasked/simulation.%s/%s' % (i, bn)
+                simFN = '/home/chrisgre/scripts/simulations/simsk1/simulation.%s/%s' % (i, bn)
                 print simFN
                 osNX = cgNexusFlat.Nexus(simFN, cgOriginRNAFlat.OriginRNA)
                 osNX.load(['filteredTargets'])
@@ -28,6 +29,34 @@ def updateAvgNumTargets(oFN):
                 totalNum = oID_numTargets.get(oID, 0)
                 avgNum = float(totalNum)/float(10.0)
                 oNX.avgNumSimulationTargets[oID] = avgNum
+
+        oNX.save()
+
+def updateAvgNumSS(oFN):
+
+        bn = os.path.basename(oFN)
+        print 'basename', bn
+
+        oID_numSS = {}
+
+        for i in range(0,10):
+                
+                simFN = '/home/chrisgre/scripts/simulations/simsk50FilteredMasked/simulation.%s/%s' % (i, bn)
+                #simFN = '/home/chrisgre/scripts/simulations/simsk1/simulation.%s/%s' % (i, bn)
+                print simFN
+                osNX = cgNexusFlat.Nexus(simFN, cgOriginRNAFlat.OriginRNA)
+                osNX.load(['numSignificantSequences'])
+                for oID in osNX.numSignificantSequences:
+                        oID_numSS = oID_numSS.get(oID, 0) + osNX.numSignificantSequences[oID]
+        
+        #now save it
+        oNX = cgNexusFlat.Nexus(oFN, cgOriginRNAFlat.OriginRNA)
+        oNX.load(['avgNumSS'])
+
+        for oID in oNX.avgNumSS:
+                totalNum = oID_numSS.get(oID, 0)
+                avgNum = float(totalNum)/float(10.0)
+                oNX.avgNumSS[oID] = avgNum
 
         oNX.save()
 
@@ -55,7 +84,7 @@ def countForError(oDir, filteredFile):
                 print groupTotal                        
         
 def updateSNR(oFN):
-
+        
         oNX = cgNexusFlat.Nexus(oFN, cgOriginRNAFlat.OriginRNA)
         oNX.load(['avgNumSimulationTargets', 'filteredTargets', 'snr'])
 
@@ -67,6 +96,23 @@ def updateSNR(oFN):
                 
                 SNR = float(actualNum)/avgNum
                 oNX.snr[oID] = SNR
+
+
+        oNX.save()
+
+def updateSNRSS(oFN):
+
+        oNX = cgNexusFlat.Nexus(oFN, cgOriginRNAFlat.OriginRNA)
+        oNX.load(['avgNumSS', 'numSignificantSequences', 'snrSS'])
+
+        for oID in oNX.snrSS:
+                actualNum = oNX.numSignificantSequences[oID]
+                avgNum = oNX.avgNumSS[oID]
+                
+                if avgNum == 0: avgNum = 1
+                
+                SNR = float(actualNum)/avgNum
+                oNX.snrSS[oID] = SNR
 
 
         oNX.save()

@@ -145,8 +145,8 @@ def parallelMakePeaks(tcc, cName, minExpression):
 		print x
                 
                 newTcc = cg.makeTcc(chrom, strand, x, x + 1)
-                testedPeak = extendPeakTest(newTcc, 20, .2, .05, 0, 6, cName) 
-                #testedPeak = roofPeakTest(newTcc, 30, .85, .9, .2, 4, 17, 24, cName)
+                #testedPeak = extendPeakTest(newTcc, 20, .2, .05, 0, 6, cName) 
+                testedPeak = roofPeakTest(newTcc, 30, .85, .9, .2, 2, 17, 24, cName)
 
                 if testedPeak:
                         f.write('%s\n' % testedPeak)

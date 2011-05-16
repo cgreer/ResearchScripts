@@ -17,7 +17,7 @@ class OriginRNA:
         totalContigLength = Field('int', None, 11)
         sequenceDuplicate = Field('bool', False, 12)
         targetDuplicate = Field('bool', False, 13)
-        snr = Field('float', None, 14)
+        snr = Field('float', -1.0, 14)
         passedFilter = Field('bool', False, 15)
         avgNumSimulationTargets = Field('float', None, 16)
         transcriptIDs = Field('intList', list(), 17)
@@ -25,4 +25,8 @@ class OriginRNA:
         transcriptTypes = Field('stringList', list(), 19)
         transcriptCodingTypes = Field('stringList', list(), 20)
         repeatStatus = Field('bool', False, 21)
-
+        gScore = Field('int', None, 22)
+        context = Field('string', '.', 23)
+        numSignificantSequences = Field('int', 0, 24)
+        avgNumSS = Field('float', -1.0, 25)
+        snrSS = Field('float', 0.0, 26)

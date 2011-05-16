@@ -2,9 +2,6 @@ import bioLibCG
 
 def writeSetToWig(wigSet, chrom, strand, assembly, name, outDir):
 
-
-        print 'if TP in set', (208148750 in wigSet)
-
         #init
         coords = sorted(wigSet)
         lDict = bioLibCG.returnChromLengthDict('hg19')

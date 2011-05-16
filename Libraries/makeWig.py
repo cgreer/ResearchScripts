@@ -182,6 +182,7 @@ def makeWigMem(fN, assembly, format = None, name = None, directory = None):
 		end = int(end)
 		if lChrom in cg.acceptableChroms:
 			
+                        '''
 			#wig for degradome
 			if lStrand == '1':
 				i = start + 20
@@ -207,7 +208,7 @@ def makeWigMem(fN, assembly, format = None, name = None, directory = None):
 					if lStrand not in hitDict[lChrom]:
 						hitDict[lChrom][lStrand] = {}
 					hitDict[lChrom][lStrand][i] = 1
-			'''		
+					
 	f.close()
 	
 	#write results to wig file

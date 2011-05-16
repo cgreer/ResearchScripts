@@ -35,8 +35,27 @@ def addIDs(fN, outFN):
         f.writelines(newLines)
         f.close()
         
+def redoIDs(fN, outFN):
+        '''Re-add IDs to the first column'''
+        
+        newLines = []
+        f = open(fN, 'r')
+        i = 0
+        for line in f:
+                ls = line.strip().split('\t')
+                ls[0] = str(i)
+                newLines.append('%s\n' % ('\t'.join(ls)))
+
+                i += 1
+        f.close()
+
+        f = open(outFN, 'w')
+        f.writelines(newLines)
+        f.close()
 
 if __name__ == "__main__":
         import sys
-        bioLibCG.submitArgs(globals()[sys.argv[1]], sys.argv[1:])
-        
+        if sys.argv[1] == "help":
+                bioLibCG.gd(sys.argv[0])
+        else:
+                bioLibCG.submitArgs(globals()[sys.argv[1]], sys.argv[1:])        

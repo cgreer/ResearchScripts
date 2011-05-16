@@ -193,7 +193,7 @@ def shuffleSeq2(fN, outFN):
                                 fOut.write('%s\t%s\n' % (oID, shuffledSeq))
                                 break
                         else:
-                                print 'did not pass contig filter'
+                                pass
 
                         if i == 99:
                                 print 'DID NOT MAKE A SHUFFLE SEQ!!!', seq
