@@ -5,7 +5,6 @@ import updateContigsFlat
 import updateDuplicatesMultiTcc as udmt
 import blankIDs
 
-#this is the directory where the alignment file has been placed
 
 '''Pipeline assumes that full alignment of small to target seqs has been done, but not truncated'''
 '''Also assumes that the results files have been made...'''
@@ -25,7 +24,7 @@ print 'tcc'
 si.updateTcc(oRNAFN, peakFN)
 print 'entropy'
 si.updateEntropy(oRNAFN)
-si.updateELevel(oRNAFN, '/home/chrisgre/smallLibs/siRNA/small/wigsk50)
+si.updateELevel(oRNAFN, '/home/chrisgre/smallLibs/siRNA/small/wigsk50')
 
 print 'contigs'
 updateContigsFlat.updateTotalContig(oRNAFN)

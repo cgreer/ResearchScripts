@@ -4,7 +4,6 @@ import subprocess
 
 def parClean(fN):
         
-        
         if '/' in fN:
                 dirName = os.path.dirname(fN)
         else:
@@ -17,13 +16,13 @@ def parClean(fN):
         
         #remove the exit signals
         for eFN in bioLibCG.recurseDir(dirName, start = basename, end = 'exitSignal'):
-                pass
                 os.remove(eFN)
 
         #cat the SORTED range files.                
         rangeFiles = bioLibCG.recurseDir(dirName, start = basename, within = 'range')
         rangeFiles.sort(key = lambda x: int(x.split('.')[-2]))
-        
+ 
+
         f = open(fN, 'w')
         for rFN in rangeFiles:
                 subprocess.Popen(['cat', rFN], stdout = f).wait()

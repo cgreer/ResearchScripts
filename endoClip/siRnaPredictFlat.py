@@ -8,6 +8,8 @@ import compareData as compare
 import mapScan
 import math
 import cgNexusFlat
+import cgWig
+import cgDegPeak
 
 
 
@@ -234,7 +236,7 @@ def updateELevel(oFN, wigDir, rn = None, tn = None):
 
 def updateContext(oFN, wigDir, chrom, strand, rn = None, tn = None):
         
-        oNX = cgNexusFlat.Nexus(oFN, cgDegPeak.Peak)
+        oNX = cgNexusFlat.Nexus(oFN, cgOriginRNAFlat.OriginRNA)
         oNX.load(['tcc', 'context'], [rn, tn])
         
                 
@@ -242,12 +244,12 @@ def updateContext(oFN, wigDir, chrom, strand, rn = None, tn = None):
         coord_contexts = cgWig.loadSingleWigContext(wigDir, chrom, strand, 'context') 
         print 'done loading'
 
-        ds = bioLibCG.dominantSpotter(['C_EXON', 'C_3UTR', 'C_5UTR', 'NC_EXON', 'NC_3UTR', 'NC_5UTR', 'C_INTRON', 'NC_INTRON', 'INTER']) 
+        ds = cg.dominantSpotter(['C_EXON', 'C_3UTR', 'C_5UTR', 'NC_EXON', 'NC_3UTR', 'NC_5UTR', 'C_INTRON', 'NC_INTRON', 'INTER']) 
 
 
         for oID in oNX.tcc:
 
-                oChrom, oStrand, start, end = bioLibCG.tccSplit(oNX.tcc[oID])
+                oChrom, oStrand, start, end = cg.tccSplit(oNX.tcc[oID])
                 if oChrom == chrom and oStrand == strand:
 
                         contexts = coord_contexts.get(start, 'INTER').split(',')

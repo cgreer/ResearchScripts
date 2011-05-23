@@ -7,14 +7,15 @@ import subprocess
 #fN and Init
 aFN = sys.argv[1] 
 aFilteredFN = sys.argv[2]
+cLevel = sys.argv[3]
 
 timer = bioLibCG.cgTimer()
 timer.start()
 
 #filter targets
 print 'filtering targets'
-parRun(30, 3, '/home/chrisgre/scripts/endoClip/filteringFlat.py', 'filterTargetsInPlace', aFN, 'True', '1', '1', '.50')
-parClean(aFN, 30)
+parRun(50, 3, '/home/chrisgre/scripts/endoClip/filteringFlat.py', 'filterTargetsInPlace', aFN, 'True', '1', '1', '.%s' % cLevel)
+parClean(aFN, 50)
 print timer.split()
 
 #make db smaller

@@ -20,7 +20,7 @@ def parRun(numParts, memoryAmount, scriptName, *args):
                 #append script arguments
                 for arg in args:
                         com.append(arg)
-                
+                        
                 #append packet running info
                 if numParts != 1:
                         com.append(str(i))

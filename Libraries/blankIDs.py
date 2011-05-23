@@ -17,6 +17,19 @@ def blankIDs(fN, outFN, numIDs = None):
         f.writelines(newLines)
         f.close()
 
+def copyIDs(fN, outFN):
+
+        fOut = open(outFN, 'w')
+        f = open(fN, 'r')
+        for line in f:
+                ls = line.strip().split('\t')
+                id = ls[0]
+
+                fOut.write(id + '\n')
+
+        f.close()
+        fOut.close()
+
 def addIDs(fN, outFN):
         '''Add IDs to the first column'''
         

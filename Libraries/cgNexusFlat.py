@@ -2,6 +2,7 @@ import cgLuckyCharmsFlat as cgLuckyCharms
 from copy import copy
 import bioLibCG
 import cgIndex
+import cgFile
 
 def lineUpdate(lineData, data, position):
 	'''lineList must NOT contain CR.  data must be string'''
@@ -20,6 +21,7 @@ def lineUpdate(lineData, data, position):
 	return lineData
 
 def getNumFileLines(fn):
+        print 'getting num file lines'
 	with open(fn) as f:
 		for i, l in enumerate(f):
 			pass
@@ -27,7 +29,7 @@ def getNumFileLines(fn):
 
 def getIDRange(paraInfo, fn):
 	'''numJobs and job number are 1 based'''
-
+        print 'getting ID range (in fxn)'
 	numJobs = int(paraInfo[1])
 	n = int(paraInfo[0])
 	numIDs = getNumFileLines(fn) #one id per line
@@ -51,7 +53,7 @@ class Nexus:
 
 	def __init__(self, dataFileName, dataClass):
 		self._dataFileName = dataFileName
-		self._dataClass = dataClass
+                self._dataClass = dataClass
 		self._attName_id_value = {}
 		self._attName_casteFromFxn = {}
 		self._attName_casteToFxn = {}
@@ -61,6 +63,7 @@ class Nexus:
 		self._rangeSpecified = []
 	        self._selectedIDs = set()
                 self._conditions = {}
+                self._packetInfo = None
 
 	def bindAttribute(self, attributeName):
 		
@@ -80,16 +83,31 @@ class Nexus:
 	def load(self, attNames, paraInfo = [None, None], idRange = [], conditions = {}):
                 '''paraInfo is [runNumber, numberOfRuns].  First parallel is checked, and then idRange'''
                 self._conditions = conditions
+                
+                myTimer = bioLibCG.cgTimer()
+                myTimer.start()
 
 		#if running a parallel job, split it into the right ids...
-		if paraInfo != [None, None]:
-			idRange = getIDRange(paraInfo, self._dataFileName)
-	
+		#print paraInfo, myTimer.split()
+                '''
+                if paraInfo != [None, None]:
+			print 'getting id range'
+                        idRange = getIDRange(paraInfo, self._dataFileName)
+	        '''
+                if paraInfo != [None, None]:
+                        paraInfo[0] = int(paraInfo[0])
+                        paraInfo[1] = int(paraInfo[1])
+                        self._packetInfo = cgFile.getPacketInfo(self._dataFileName, paraInfo[1])[paraInfo[0] - 1]
+                        
+                #print 'done getting id range', myTimer.split()
 		#if running parallel or specific range, mark range info
 		self._selectedAttNames = attNames		
-		if idRange:
+		
+                '''
+                if idRange:
 			self._rangeSpecified = [idRange[0], idRange[-1]]
-			
+		'''
+
 		#get casting and column info
 		self.loadTranscriptionInfo(attNames)
 
@@ -108,7 +126,9 @@ class Nexus:
                 tranTime = 0.0
                 conditionTime = 0.0
 
+                #print 'beginning skipping to file range', myTimer.split()
                 #skip to start of specified range
+                '''
                 if self._rangeSpecified:
                         fIndex = cgIndex.lineIndex(self._dataFileName)
                         fIndex.passCheckFunction(cgIndex.primaryIDCheckFunction)
@@ -116,19 +136,31 @@ class Nexus:
                         f = fIndex.file
                 else:
                         f = open(self._dataFileName, 'r')
-	        
+	        '''
+                
+                dataFile = cgFile.cgFile(self._dataFileName)
+                if self._packetInfo:
+                        dataFile.seekToLineStart(self._packetInfo[0])
+                #print 'done skipping', myTimer.split()
 
                 #transcribe values
-                for line in f:
+                '''for line in f:'''
+                for line in dataFile.file:
 
 			ls = line.strip().split('\t')
 			id = int(ls[0]) #id is always first slot
 		
-
+                        
 			#only transcribe selected range!
-			if idRange:
+			
+                        '''
+                        if idRange:
 				if id > idRange[1]:
 		                        break
+                        '''
+                        if self._packetInfo:
+                                if id == self._packetInfo[1]:
+                                        break
 
 			#transcribe
 			for attName in attNames:
@@ -156,24 +188,31 @@ class Nexus:
                                                 else:            
                                                         for aName in attNames:
                                                                 del self._attName_id_value[aName][id]
-                f.close()
-
+                '''f.close()'''
+                dataFile.file.close()
                 
+                #print 'done filling up master dict', myTimer.split()
 
 		#bind attribute names to dictionaries
 		for attName in attNames:
 			self.bindAttribute(attName)
 
+                #print 'done binding attribute names', myTimer.split()
                 #print 'done loading', self._dataFileName
 
 
 	def save(self, outFN = None):
 		
 		if outFN == None: outFN = self._dataFileName
-		if self._rangeSpecified:
+		'''if self._rangeSpecified:
 			outFN += '.range.%s.%s' % (self._rangeSpecified[0], self._rangeSpecified[1]) 
+                '''
+
+                if self._packetInfo:
+			outFN += '.range.%s.%s' % (self._packetInfo[0], self._packetInfo[1]) 
+
                 
-                
+                '''
                 #skip to start of specified range
                 if self._rangeSpecified:
                         fIndex = cgIndex.lineIndex(self._dataFileName)
@@ -182,17 +221,27 @@ class Nexus:
                         f = fIndex.file
                 else:
                         f = open(self._dataFileName, 'r')
-		
+		'''
+
+                dataFile = cgFile.cgFile(self._dataFileName)
+                if self._packetInfo:
+                        dataFile.seekToLineStart(self._packetInfo[0])
+                
                 #create new file contents
 		newLines = []
-		for line in f:
+		'''for line in f:'''
+                for line in dataFile.file:
 			ls = line.strip().split('\t')
 			id = int(ls[0])
                         
                         #stop checking for ids once out of range
-                        if self._rangeSpecified:
+                        
+                        '''if self._rangeSpecified:
 				if id > self._rangeSpecified[1]: break
-                       
+                        '''
+                        if self._packetInfo:
+                                if id == self._packetInfo[1]: break
+
                         #save the rest
 			for attName in self._selectedAttNames:
 				newVal = self._attName_casteToFxn[attName](self._attName_id_value[attName][id])
@@ -200,7 +249,8 @@ class Nexus:
 
                         #only one newLine no matter the amount of attributes updated	
 			newLines.append('%s\n' % '\t'.join(ls))
-		f.close()
+		'''f.close()'''
+                dataFile.file.close()
 
 		#output file
 		f = open(outFN, 'w')
@@ -208,7 +258,8 @@ class Nexus:
 		f.close()
 
 		#exit signal for parallel processes
-                if self._rangeSpecified:
+                '''if self._rangeSpecified:'''
+                if self._packetInfo:
                         f = open(outFN + '.exitSignal', 'w')
                         f.write('DONE')
                         f.close()

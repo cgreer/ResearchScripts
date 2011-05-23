@@ -5,7 +5,7 @@ import cgDegPeak
 
 class cgAlignment:
 
-        sID = Field('int', None, 1)
+        sID = Field('int', None, 1)                                     
         tID = Field('int', None, 2)
         sStart = Field('int', None, 3)
         sEnd = Field('int', None, 4)

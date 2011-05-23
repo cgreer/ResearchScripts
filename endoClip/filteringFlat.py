@@ -83,7 +83,7 @@ def filterTargetsInPlace(aFN, inTranscript, misLevel, centerLevel, minCenterLeve
         if inTranscript == 'False': inTranscript = False
         misLevel, centerLevel, minCenterLevel =  int(misLevel), int(centerLevel), float(minCenterLevel)
 
-
+        print 'packet params', rn, tn
         aNX = cgNexusFlat.Nexus(aFN, cgAlignmentFlat.cgAlignment)
         aNX.load(['passed', 'transcriptOverlap', 'mismatchStatus', 'centerExpression'], [rn, tn])
 

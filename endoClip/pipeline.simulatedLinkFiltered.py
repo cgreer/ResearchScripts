@@ -15,7 +15,7 @@ timer = bioLibCG.cgTimer()
 timer.start()
 
 #create oRNA file(simulated only)
-blankIDs.blankIDs(seqFN, oFN)
+blankIDs.copyIDs(seqFN, oFN)
 
 #link oRNA to filteredTargets
 print 'linking oRNA to filtered targets'

@@ -13,7 +13,7 @@ def updateAvgNumTargets(oFN):
         for i in range(0,10):
                 
                 #simFN = '/home/chrisgre/scripts/simulations/simsk50FilteredMasked/simulation.%s/%s' % (i, bn)
-                simFN = '/home/chrisgre/scripts/simulations/simsk1/simulation.%s/%s' % (i, bn)
+                simFN = '/home/chrisgre/scripts/simulations/simsk50/simulation.%s/%s' % (i, bn)
                 print simFN
                 osNX = cgNexusFlat.Nexus(simFN, cgOriginRNAFlat.OriginRNA)
                 osNX.load(['filteredTargets'])
@@ -41,14 +41,13 @@ def updateAvgNumSS(oFN):
 
         for i in range(0,10):
                 
-                simFN = '/home/chrisgre/scripts/simulations/simsk50FilteredMasked/simulation.%s/%s' % (i, bn)
-                #simFN = '/home/chrisgre/scripts/simulations/simsk1/simulation.%s/%s' % (i, bn)
+                #simFN = '/home/chrisgre/scripts/simulations/simsk50FilteredMasked/simulation.%s/%s' % (i, bn)
+                simFN = '/home/chrisgre/scripts/simulations/simsk50/simulation.%s/%s' % (i, bn)
                 print simFN
                 osNX = cgNexusFlat.Nexus(simFN, cgOriginRNAFlat.OriginRNA)
                 osNX.load(['numSignificantSequences'])
                 for oID in osNX.numSignificantSequences:
-                        oID_numSS = oID_numSS.get(oID, 0) + osNX.numSignificantSequences[oID]
-        
+                        oID_numSS[oID] = oID_numSS.get(oID, 0) + osNX.numSignificantSequences[oID]
         #now save it
         oNX = cgNexusFlat.Nexus(oFN, cgOriginRNAFlat.OriginRNA)
         oNX.load(['avgNumSS'])
@@ -57,7 +56,7 @@ def updateAvgNumSS(oFN):
                 totalNum = oID_numSS.get(oID, 0)
                 avgNum = float(totalNum)/float(10.0)
                 oNX.avgNumSS[oID] = avgNum
-
+                print oID, avgNum
         oNX.save()
 
 def countForError(oDir, filteredFile):
@@ -121,4 +120,5 @@ if __name__ == "__main__":
         import sys
         bioLibCG.submitArgs(updateAvgNumTargets, sys.argv)        
         bioLibCG.submitArgs(updateSNR, sys.argv)        
-        #bioLibCG.submitArgs(countForError, sys.argv)        
+        #bioLibCG.submitArgs(updateAvgNumSS, sys.argv)        
+        #bioLibCG.submitArgs(updateSNRSS, sys.argv)        

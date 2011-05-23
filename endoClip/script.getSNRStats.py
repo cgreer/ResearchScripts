@@ -48,6 +48,36 @@ def totalSNR(oFN):
         print '\n' 
         #print 'stderr(%s)' % n, stdv(simsTotals)/sqrt(10)
 
+def totalSNRSS(oFN):
+        
+        oNX = cgNexusFlat.Nexus(oFN, cgOriginRNAFlat.OriginRNA)
+        oNX.load(['snrSS', 'numSignificantSequences', 'avgNumSS'])
+
+        totalRun = 0 
+        totalSim = 0
+        simsTotals = []
+        n = 0
+        highSNR = 0
+        for oID in oNX.snrSS:
+                
+                #collect stats
+                totalRun += oNX.numSignificantSequences[oID]
+                simsTotal = oNX.avgNumSS[oID] * 10
+                simsTotals.append(simsTotal)
+                totalSim += oNX.avgNumSS[oID]
+                
+                if oNX.snrSS[oID] > 2:
+                        highSNR += 1
+                n +=1
+       
+        print oFN
+        print 'Total Number Targets for my run:', totalRun
+        print 'Total Number Targets for Simulations:',  totalSim
+        print 'SNR', float(totalRun)/float(totalSim)
+        print 'Total oRNA:', n, 'Total oRNA w/ SNR > 2:', highSNR
+        print '\n' 
+        #print 'stderr(%s)' % n, stdv(simsTotals)/sqrt(10)
+
 if __name__ == "__main__":
         import sys
-        bioLibCG.submitArgs(totalSNR, sys.argv)
+        bioLibCG.submitArgs(totalSNRSS, sys.argv)
