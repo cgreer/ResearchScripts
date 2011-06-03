@@ -6,8 +6,6 @@ import updateDuplicatesMultiTcc as udmt
 import blankIDs
 
 
-'''Pipeline assumes that full alignment of small to target seqs has been done, but not truncated'''
-'''Also assumes that the results files have been made...'''
 oRNAFN = sys.argv[1]
 peakFN = sys.argv[2]
 seqFN = sys.argv[3]

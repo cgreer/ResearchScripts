@@ -11,6 +11,25 @@ import cgNexusFlat
 import cgWig
 import cgDegPeak
 
+def updatePhastScores(oFN, phastFN, rn = None, tn = None):
+        
+        oNX = cgNexusFlat.Nexus(oFN, cgOriginRNAFlat.OriginRNA)
+        oNX.load(['tcc', 'phastScores'], [rn, tn])
+
+        f = open(phastFN, 'r')
+        for line in f:
+                ls = line.strip().split(' ')
+                oID = int(ls[0])
+                phastScores = [float(x) for x in ls[1:]]
+
+                #reverse to get 5' -> 3' scores
+                chrom, strand, start, end = cg.tccSplit(oNX.tcc[oID])
+                if strand == '-1':
+                        phastScores.reverse()
+
+                oNX.phastScores[oID] = phastScores
+
+        oNX.save()                
 
 
 def updateSequence(oFN, seqFN, rn = None, tn = None):
@@ -144,44 +163,6 @@ def getEntropy(sequence):
 
         return entropy
 
-def updateSignificant(resultsFN, simulationAverageFN, outFN):
-        
-        id_avgNum = {}
-        f = open(simulationAverageFN, 'r')
-        for line in f:
-                ls = line.strip().split('\t')
-                id_avgNum[int(ls[0])] = float(ls[1])
-        
-        f = open(resultsFN, 'r')
-        newLines = []
-        for line in f:
-                ls = line.strip().split('\t')
-                id = int(ls[0])
-                numTargets = float(len(ls[4].split(',')))
-                try:
-                        numExpected = id_avgNum[id]
-                except KeyError:
-                        numExpected = 0
-
-                sigFlag = 'SIG'
-                if numTargets < numExpected:
-                        sigFlag = 'NON'
-
-                #Do Calculations here
-
-
-                updateVal = sigFlag
-
-                #update newLines
-                newLines.append(cg.appendToLine(line, updateVal, int(8)))
-        f.close()
-        
-        
-        #update file
-        f = open(outFN, 'w')
-        f.writelines(newLines)
-        f.close()
-
 
 def updateEntropy(oFN, rn = None, tn = None):
 	
@@ -258,6 +239,38 @@ def updateContext(oFN, wigDir, chrom, strand, rn = None, tn = None):
         
         oNX.save()
 
+def updateType(oFN, wigDir, chrom, strand, rn = None, tn = None):
+        
+        oNX = cgNexusFlat.Nexus(oFN, cgOriginRNAFlat.OriginRNA)
+        oNX.load(['tcc', 'transcriptType', 'transcriptTypes'], [rn, tn])
+        
+                
+        print 'loading wig'
+        coord_types = cgWig.loadSingleWigContext(wigDir, chrom, strand, 'tType') 
+        print 'done loading'
+        
+        domOrder = ['protein_coding', 'miRNA', 'rRNA', 'snoRNA', 'snRNA', 'lincRNA', 'longNC', 'misc_RNA',
+                    'Mt_rRNA', 'Mt_tRNA', 'misc_RNA_pseudogene', 'Mt_tRNA_pseudogene', 'polymorphic_pseudogene',
+                    'processed_transcript', 'miRNA_pseudogene', 'rRNA_pseudogene', 'scRNA_pseudogene',
+                    'snoRNA_pseudogene', 'snRNA_pseudogene', 'tRNA_pseudogene', 'pseudogene', 'TR_C_gene',
+                    'TR_J_gene', 'TR_V_gene', 'TR_V_pseudogene', 'IG_C_gene', 'IG_C_pseudogene', 'IG_D_gene',
+                    'IG_J_gene', 'IG_J_pseudogene', 'IG_V_gene', 'IG_V_pseudogene', 'unknown']
+        ds = cg.dominantSpotter(domOrder)
+
+
+        for oID in oNX.tcc:
+
+                oChrom, oStrand, start, end = cg.tccSplit(oNX.tcc[oID])
+                if oChrom == chrom and oStrand == strand:
+
+                        tranTypes = coord_types.get(start, 'None').split(',')
+                        types = [x.split(':')[1] if x != None else None for x in tranTypes]
+
+                        oNX.transcriptTypes[oID] = types 
+                        oNX.transcriptType = ds.spotItem(types)
+
+        
+        oNX.save()
 
 if __name__ == "__main__":
 	import sys

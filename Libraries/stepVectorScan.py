@@ -282,8 +282,11 @@ def svCoord(tccList, config = None):
 		for line in fIndex.file:
 			
 			#print 'Line:', line.strip()
-			lBeg = int(cg.ss(line)[1])
+			lBeg = int(cg.ss(line)[1]) + 1
+                        #print 'lBeg', lBeg
 			lEnd = int(cg.ss(line)[2])
+                        #print 'lEnd', lEnd
+                        #print '--'
 			lValue = int(cg.ss(line)[3].split('.')[0])
 			
 			if tccStart > lBeg:
@@ -300,7 +303,7 @@ def svCoord(tccList, config = None):
 		fIndex.close() #close the file and the index after use...
 
 	return coordDict
-
+        
 def profileAroundPoint(zeroPoint, span, cName, ratio = False, ratioCoord = None):
 	'''span is +/- that number...  if you put in 30, you'll get 
 	-29 to 29 around 0

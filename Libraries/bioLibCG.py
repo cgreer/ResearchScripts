@@ -13,6 +13,8 @@ zebrafishChromosomes = ['chr1', 'chr2', 'chr3', 'chr4', 'chr5', 'chr6', 'chr7', 
 acceptableChroms = [('chr' + str(x)) for x in xrange(1,99)]
 acceptableChroms.extend(['chrM', 'chrX', 'chrY', 'chrZ'])
 
+dnaComp = {'A':'T', 'T':'A', 'G':'C', 'C':'G'}
+
 
 def convertDcdToTcc(dcdList):
 	tccList = []
@@ -788,3 +790,18 @@ def expandTcc(tcc, amount):
 def gd(fN):
         
         subprocess.Popen(['gd.sh', fN])
+
+def compSeq(seq, type = 'DNA'):
+        return ''.join([dnaComp[x] for x in seq])
+
+class cgPrint:
+
+        def __init__(self):
+                self.show = False
+                
+        def tell(self, *args):
+                if self.show:
+                        print '\t'.join([str(x) for x in args])
+
+
+

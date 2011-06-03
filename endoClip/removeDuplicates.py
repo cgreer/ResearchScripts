@@ -4,9 +4,9 @@ def removeDuplicates(fN, outFN):
 
         f = open(fN, 'r')
         
-        seqs = {}
+        seqs = set()
         for seq in f:
-                seqs[seq] = 1
+                seqs.add(seq)
         f.close()
 
         outF = open(outFN, 'w')

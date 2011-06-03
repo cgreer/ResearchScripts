@@ -26,7 +26,7 @@ $HOME/exec/splitFile.sh $fN $outDir $numParts
 echo submitting aligning jobs
 for i in ${outDir}/*.splitted.*
 do
-	$HOME/exec/qJobX5.sh $HOME/scripts/alignSeqs/qCGAlign.sh $i $dbName $wordSize $i.aligned $maxMismatches
+	$HOME/exec/qJobX8.sh $HOME/scripts/alignSeqs/qCGAlign.sh $i $dbName $wordSize $i.aligned $maxMismatches
 done
 
 if false

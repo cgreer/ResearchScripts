@@ -7,7 +7,7 @@ def returnPeaks(pointsDict, span = 2, minLevel = 5):
 	lowest = pointsDict.keys()
 	lowest.sort()
 	peaks = []
-	
+
 	for i in range(int(lowest[0]) + span + 1, int(lowest[-1]) - span - 1):
 		val = pointsDict[i]
 		if val < minLevel: #minimum
@@ -33,7 +33,6 @@ def returnPeaks(pointsDict, span = 2, minLevel = 5):
 		if peakFlag:
 			#print checkList, val
 			peaks.append(i)
-		
 	return peaks
 
 def returnContBlocks(profile, tcc, minLevel = 5):
@@ -71,11 +70,11 @@ class stretch:
 		#get the absolute profile for this stretch
 		self.tcc = tcc
 		#this uses the merged wig files...
-		self.profile = svs.svCoord([tcc], config)
+                self.profile = svs.svCoord([tcc], config)
 		
 	
 	def createPeaks(self, span = 2, minVal = 5):
-		self.peaks = returnPeaks(self.profile, span, minVal)
+                self.peaks = returnPeaks(self.profile, span, minVal)
 	
 	def createContBlocks(self, minVal = 5):
 		self.blocks = returnContBlocks(self.profile, self.tcc, minVal)

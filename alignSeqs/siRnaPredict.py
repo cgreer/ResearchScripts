@@ -220,7 +220,6 @@ def updateMicroRNAOverlap(aDir, microFN):
 	
         oRNA_DC.commit(id_oRNA)
 
-
 def updateTargetsExpression(resultsFN, targetsFN, inputPosition, updatePosition, outFN):
 	
         #load target expression dict

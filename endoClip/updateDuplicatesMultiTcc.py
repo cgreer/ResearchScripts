@@ -20,6 +20,40 @@ def updateSeqDuplicateMultiTcc(oFN, rn = None, tn = None):
 
         oNX.save()
 
+def updateSharedTargets(oFN, rn = None, tn = None):
+        '''Just because there are duplicate sequences does not mean that
+        the genomic position of each results is the correct one.  The 
+        targets for each genomic position should be the same as the targets
+        for each duplicate sequence
+
+        make set of targets for each oID --> set each oid's targets'''
+
+        oNX = cgNexusFlat.Nexus(oFN, cgOriginRNAFlat.OriginRNA)
+        oNX.load(['sequence', 'filteredTargets'], [rn, tn])
+
+        knownSeq_targets = {}        
+
+        #create oID groups and target sets.
+        for oID in oNX.sequence:
+                currSeq = oNX.sequence[oID]
+                        
+
+                #add targets to set
+                for tID in oNX.filteredTargets[oID]:
+                        knownSeq_targets.setdefault(currSeq, set()).add(tID)
+
+                        
+        for oID in oNX.sequence:
+
+                currSeq = oNX.sequence[oID]
+
+                newTargets = list(knownSeq_targets.get(currSeq, set()))
+                oNX.filteredTargets[oID] = newTargets
+
+        oNX.save()                
+        
+
+
 if __name__ == "__main__":
         import sys
         bioLibCG.submitArgs(updateSeqDuplicateMultiTcc, sys.argv)

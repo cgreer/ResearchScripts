@@ -8,7 +8,7 @@ def loadSingleWig(wigDir, chrom, strand, prefix):
         f.readline()
         for line in f:
                 ls = line.strip().split('\t')
-                start, end, expr = int(ls[1]), int(ls[2]) - 1, int(ls[3])
+                start, end, expr = int(ls[1]) + 1, int(ls[2]), int(ls[3]) #1BASE
 
                 if expr == 0: continue
                 
@@ -26,7 +26,7 @@ def loadSingleWigContext(wigDir, chrom, strand, prefix):
         f.readline()
         for line in f:
                 ls = line.strip().split('\t')
-                start, end, expr = int(ls[1]), int(ls[2]) - 1, ls[3]
+                start, end, expr = int(ls[1]) + 1, int(ls[2]), ls[3] #1BASE
 
                 if expr == 'INTER': continue
                 
@@ -44,7 +44,7 @@ def loadSingleWigTranscript(wigDir, chrom, strand, prefix):
         f.readline()
         for line in f:
                 ls = line.strip().split('\t')
-                start, end, expr = int(ls[1]), int(ls[2]) - 1, ls[3]
+                start, end, expr = int(ls[1]) + 1, int(ls[2]), ls[3] #1BASE
 
                 if expr == 'None': continue
                 
@@ -65,10 +65,10 @@ def loadWigDict(wigDir):
 
                 chr_strand_coord_expr.setdefault(chrom, {})[strand] = {}
                 f = open(fN, 'r')
-                f.readline()
+                f.readline() #header
                 for line in f:
                         ls = line.strip().split('\t')
-                        start, end, expr = int(ls[1]), int(ls[2]) - 1, int(ls[3])
+                        start, end, expr = int(ls[1]) + 1, int(ls[2]), int(ls[3]) #1BASE
 
                         if expr == 0: continue
                         

@@ -11,6 +11,8 @@ def splitByColumn(fN, column, splitModifier = None):
                 
                 if splitModifier == 'chromStrand':
                         columnValue = '%s.%s' % (ls[column].split(':')[0], ls[column].split(':')[1])
+                elif splitModifier == 'editing':
+                        columnValue = '%s.%s' % (ls[1], ls[15])
                 else:
                         columnValue = ls[column]
                 

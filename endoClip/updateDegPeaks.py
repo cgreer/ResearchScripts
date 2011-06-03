@@ -58,6 +58,12 @@ def updateTranscriptOverlap(oFN, wigDir, chrom, strand, rn = None, tn = None):
         oNX = cgNexusFlat.Nexus(oFN, cgDegPeak.Peak)
         oNX.load(['tOverlap', 'tcc'], [rn, tn])
 
+        #load the AS wig file for this degradome strand
+        if strand == '1':
+                strand = '-1'
+        else:
+                strand = '1'
+        
         coord_transcripts = cgWig.loadSingleWigTranscript(wigDir, chrom, strand, 'transcript')
 
         for oID in oNX.tOverlap:
@@ -85,7 +91,12 @@ def updateContext(oFN, wigDir, chrom, strand, rn = None, tn = None):
         oNX = cgNexusFlat.Nexus(oFN, cgDegPeak.Peak)
         oNX.load(['tcc', 'context'], [rn, tn])
         
-                
+         
+        if strand == '1':
+                strand = '-1'
+        else:
+                strand = '1'
+        
         print 'loading wig'
         coord_contexts = cgWig.loadSingleWigContext(wigDir, chrom, strand, 'context') 
         print 'done loading'
@@ -111,18 +122,13 @@ def updateContext(oFN, wigDir, chrom, strand, rn = None, tn = None):
         
         oNX.save()
 
-def updateGSequence(oFN, seqFN, rn = None, tn = None):
+def updateGSequence(oFN, rn = None, tn = None):
         
         oNX = cgNexusFlat.Nexus(oFN, cgDegPeak.Peak)
-        oNX.load(['gSequence'], [rn, tn])
+        oNX.load(['gSequence', 'sequence'], [rn, tn])
 
-        f = open(seqFN, 'r')
-        i = 0
-        for line in f:
-                ls = line.strip().split('\t')
-                seq = ls[0]
-                oNX.gSequence[i] = seq
-                i += 1
+        for dID in oNX.sequence:
+                oNX.gSequence[dID] = oNX.sequence[dID][16:36]
 
         oNX.save()
 

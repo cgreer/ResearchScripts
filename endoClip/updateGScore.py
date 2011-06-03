@@ -9,7 +9,6 @@ def updateGScore(oFN, rn = None, tn = None):
         oNX.load(['gScore', 'sequence'], [rn, tn])
 
         for oID in oNX.gScore:
-                print oID, oNX.sequence[oID]
                 oNX.gScore[oID] = gZipEntropy.gZipEntropy(oNX.sequence[oID])
 
 

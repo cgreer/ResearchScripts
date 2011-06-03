@@ -16,7 +16,7 @@ def writeWigDictToWig(wigDict, chrom, strand, assembly, name, outDir, blankValue
         #write first blank line
         f.write('%s\t%s\t%s\t%s\n' % (chrom, 0, coords[0], blankValue))
       
-        #print 'beginning block', coords[0] 
+        #p.tell(' 'beginning block', coords[0] 
         prevCoord = coords[0]
         prevValue = wigDict[coords[0]]
         blockStart = prevCoord
@@ -31,7 +31,7 @@ def writeWigDictToWig(wigDict, chrom, strand, assembly, name, outDir, blankValue
                                 prevCoord = coord
                                 prevValue = currValue
                         else:
-                                #print 'writing last equal block', blockStart, prevCoord, prevValue
+                                #p.tell(' 'writing last equal block', blockStart, prevCoord, prevValue
                                 #finish last block, with NO blank block
                                 f.write('%s\t%s\t%s\t%s\n' % (chrom, blockStart, prevCoord + 1, prevValue))
                                
@@ -44,11 +44,11 @@ def writeWigDictToWig(wigDict, chrom, strand, assembly, name, outDir, blankValue
                 else: #finish last block, write zero block, start another block
                        
                        #last
-                       #print 'finishing last block', blockStart, prevCoord
+                       #p.tell(' 'finishing last block', blockStart, prevCoord
                        f.write('%s\t%s\t%s\t%s\n' % (chrom, blockStart, prevCoord + 1, prevValue))
                        
                        #zero
-                       #print 'zero After:', prevCoord, coord
+                       #p.tell(' 'zero After:', prevCoord, coord
                        f.write('%s\t%s\t%s\t%s\n' % (chrom, prevCoord + 1, coord, blankValue))
 
                        #init next block
@@ -87,11 +87,11 @@ def makeTranscriptWig(tranFN, wigDir, chrom, strand):
         
 def makeContextWig(tranFN, wigDir, chrom, strand):
 
+        p = bioLibCG.cgPrint()                               
         coord_id = {}
         f = open(tranFN, 'r')
         for line in f:
                 ls = line.strip().split('\t')
-                
                 tChrom, tStrand = ls[1], bioLibCG.switchStrandFormat(ls[2])
                 if tChrom != chrom or tStrand != strand:
                         continue
@@ -100,8 +100,12 @@ def makeContextWig(tranFN, wigDir, chrom, strand):
                 exonStarts = [int(x) for x in ls[8][:-1].split(',')]
                 exonEnds = [int(x) - 1 for x in ls[9][:-1].split(',')]
                 exonPairs = zip(exonStarts, exonEnds)
-                codingStatus = '_coding' in ls[15]
+                codingStatus = '_coding' in ls[13]
                 tID = ls[0]
+
+                #debug
+                p.show = False
+
                 intronPairs = []
                 i = 0
                 for pair in exonPairs:
@@ -113,45 +117,57 @@ def makeContextWig(tranFN, wigDir, chrom, strand):
                         intronPairs.append((iStart, iEnd))
                         i += 1
 
+                #p.tell(tStart, tEnd, cStart, cEnd, exonPairs, intronPairs) 
                 
                 #take care of messy UTRs and assign utr ranges
-                if cStart == tStart or cStart == tEnd + 1:
-                        #print '5 is none'
-                        range5 = ()
-                else:
-                        if strand == '1':
+                #5UTR
+                if strand == '1':
+                        if cStart == tStart or cStart == tEnd + 1:
+                                p.tell('5 is none')
+                                range5 = ()
+                        else:
                                 range5 = (tStart, cStart - 1)
+                else:
+                        if cEnd + 1 == tStart or cEnd + 1 == tEnd + 1:
+                                p.tell('5 is none')
+                                range5 = ()
                         else:
                                 range5 = (cEnd + 1, tEnd)
+
                 
-                if cEnd + 1 == tStart or cEnd + 1 == tEnd + 1:
-                        #print '3 is none'
-                        range3 = ()
-                else:
-                        if strand == 1:
+                #3UTR
+                if strand == '1':
+                        if cEnd + 1 == tStart or cEnd + 1 == tEnd + 1:
+                                p.tell('3 is none')
+                                range3 = ()
+                        else:
                                 range3 = (cEnd + 1, tEnd)
+                else:
+                        if cStart == tStart or cStart == tEnd + 1:
+                                p.tell('3 is none')
+                                range3 = ()
                         else:
                                 range3 = (tStart, cStart - 1)
-                
-                #print 'ranges', range5, range3
-                #print 'intronRange', intronPairs
+                                
+                p.tell('ranges', range5, range3)
+                p.tell('intronRange', intronPairs)
                 utr5 = compareData.subtractTwoRanges([range5], intronPairs)
                 utr3 = compareData.subtractTwoRanges([range3], intronPairs)
                 
-                #print 'utr', utr5, utr3
+                p.tell('utr', utr5, utr3)
 
-                #print 'exon before', exonPairs
+                p.tell('exon before', exonPairs)
                 exonPairs = compareData.subtractTwoRanges(exonPairs, [range5])
                 exonPairs = compareData.subtractTwoRanges(exonPairs, [range3])
-                #print 'exon after', exonPairs
+                p.tell('exon after', exonPairs)
 
-         
-                #print 'info', utr5, exonPairs, utr3
+                debugSpot = 23631989 
 
                 #5UTR
                 for pair in utr5:
-                        #print 'filling utr5', pair[0], pair[1]
+                        p.tell('filling utr5', pair[0], pair[1])
                         for i in xrange(pair[0], pair[1] + 1):
+                                if i == debugSpot: p.tell('*** 5UTR', codingStatus, tID)
                                 if codingStatus:
                                         coord_id[i] = coord_id.get(i, '')  + 'C_5UTR '
                                 else:
@@ -159,8 +175,9 @@ def makeContextWig(tranFN, wigDir, chrom, strand):
                 
                 #Exons
                 for pair in exonPairs:
-                        #print 'filling exons', pair[0], pair[1]
+                        p.tell('filling exons', pair[0], pair[1])
                         for i in xrange(pair[0], pair[1] + 1):
+                                if i == debugSpot: p.tell('*** exon', codingStatus, tID)
                                 if codingStatus:
                                         coord_id[i] = coord_id.get(i, '')  + 'C_EXON '
                                 else:
@@ -168,8 +185,9 @@ def makeContextWig(tranFN, wigDir, chrom, strand):
 
                 #Introns
                 for pair in intronPairs:
-                        #print 'filling introns', pair[0], pair[1]
+                        p.tell('filling introns', pair[0], pair[1])
                         for i in xrange(pair[0], pair[1] + 1):
+                                if i == debugSpot: p.tell('*** INTRON', codingStatus, tID)
                                 if codingStatus:
                                         coord_id[i] = coord_id.get(i, '')  + 'C_INTRON '
                                 else:
@@ -177,20 +195,50 @@ def makeContextWig(tranFN, wigDir, chrom, strand):
 
                 #3UTR
                 for pair in utr3:
-                        #print 'filling utr3', pair[0], pair[1]
+                        p.tell('filling utr3', pair[0], pair[1])
                         for i in xrange(pair[0], pair[1] + 1):
+                                if i == debugSpot: p.tell(' *** 3UTR', codingStatus, tID)
                                 if codingStatus:
                                         coord_id[i] = coord_id.get(i, '')  + 'C_3UTR '
                                 else:
                                         coord_id[i] = coord_id.get(i, '')  + 'NC_3UTR '
 
+                p.show = False
+
         #uniqify, stringify
         for i, ids in coord_id.iteritems():
                 coord_id[i] = ','.join([x for x in set(ids.strip().split(' '))])
         
-        #print 'finalInfo', utr5, exonPairs, utr3
+        #p.tell('finalInfo', utr5, exonPairs, utr3)
         #write wig to file                
         writeWigDictToWig(coord_id, chrom, strand, 'hg19', 'context', wigDir, 'INTER')       
+
+def makeTypeWig(tranFN, wigDir, chrom, strand): 
+        '''Using 15th column in transcripts for type info...might want to use something different?'''
+
+        coord_id = {}
+        f = open(tranFN, 'r')
+        for line in f:
+                ls = line.strip().split('\t')
+                
+                tChrom, tStrand = ls[1], bioLibCG.switchStrandFormat(ls[2])
+                if tChrom != chrom or tStrand != strand:
+                        continue
+                tID = ls[0]
+                tType = ls[14] 
+                tStart, tEnd = int(ls[3]), int(ls[4]) - 1 #0BASE CONVERSION !!! it might have to be 0BASE for making wig...?
+
+                tIDType = '%s:%s' % (tID, tType)       
+                for i in xrange(tStart, tEnd + 1):
+                        coord_id[i] = coord_id.get(i, '')  + '%s ' % tIDType
+
+        #unique, string
+        for i, ids in coord_id.iteritems():
+                coord_id[i] = ','.join([x for x in set(ids.strip().split(' '))])
+
+        #write wig to file                
+        writeWigDictToWig(coord_id, chrom, strand, 'hg19', 'tType', wigDir, 'None')       
+
 
 if __name__ == "__main__":
         import sys
