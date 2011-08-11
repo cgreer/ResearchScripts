@@ -9,6 +9,7 @@ import blankIDs
 oRNAFN = sys.argv[1]
 peakFN = sys.argv[2]
 seqFN = sys.argv[3]
+smallWigFN = sys.argv[4]
 
 timer = bioLibCG.cgTimer()
 timer.start()
@@ -22,7 +23,8 @@ print 'tcc'
 si.updateTcc(oRNAFN, peakFN)
 print 'entropy'
 si.updateEntropy(oRNAFN)
-si.updateELevel(oRNAFN, '/home/chrisgre/smallLibs/siRNA/small/wigsk50')
+#si.updateELevel(oRNAFN, '/home/chrisgre/smallLibs/siRNA/small/wigsk50')
+si.updateELevel(oRNAFN, smallWigFN)
 
 print 'contigs'
 updateContigsFlat.updateTotalContig(oRNAFN)

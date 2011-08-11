@@ -4,7 +4,9 @@ import os
 
 def parRun(numParts, memoryAmount, scriptName, *args):
         numParts = int(numParts)
-        
+        noOut = open('/dev/null', 'w')
+       
+        print '  submitting Jobs'
         for i in xrange(1, numParts + 1):
                
                 #specific the correct qJob with correct memory
@@ -27,8 +29,8 @@ def parRun(numParts, memoryAmount, scriptName, *args):
                         com.append(str(numParts))
                 
                 #run each job
-                subprocess.Popen(com).wait()
-        
+                subprocess.Popen(com, stdout=noOut).wait()
+        noOut.close()
 
 if __name__ == "__main__":
         import sys

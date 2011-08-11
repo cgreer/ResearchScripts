@@ -25,6 +25,7 @@ class cgAlignment:
         repeat = Field('bool', False, 18)
         gScore = Field('int', 0, 19)
         targetSequence = Field('string', '.', 20)
+        type = Field('string', '.', 21)
 
 def appendTInfo(aFN, degSmallFN, rn = None, tn = None):
 

@@ -3,6 +3,8 @@ import os
 import time
 import subprocess
 import parCleanSorted
+from progressbar import ProgressBar,SimpleProgress,Percentage,Bar,Timer
+
 
 def checkExit(fN, numPackets):
         numPackets = int(numPackets)
@@ -11,17 +13,16 @@ def checkExit(fN, numPackets):
         if os.environ['PWD'] not in dirName:
                 dirName = os.path.dirname(os.environ['PWD'] + '/' + fN)
  
-        sleepTime = 10
-        iteration = 1
+        sleepTime = 1
+        pbar = ProgressBar(widgets=['  ', SimpleProgress(), ' ', Timer(), ' ', Bar()], maxval=numPackets).start()
         while True:
-
                 time.sleep(sleepTime)
                 exitSignals = bioLibCG.recurseDir(dirName, start = baseName , end = 'exitSignal')
-                print 'waiting...', str(len(exitSignals)), '/', str(numPackets), '%s' % bioLibCG.prettyTime(sleepTime * iteration), fN 
+                pbar.update(len(exitSignals))                
                 if len(exitSignals) == numPackets:
+                        pbar.finish()
                         print 'Jobs all finished!'
                         break
-                iteration += 1
 
 def parClean(fN, numPackets):
         
@@ -29,9 +30,17 @@ def parClean(fN, numPackets):
         checkExit(fN, numPackets)
 
         #run cleanup script
-        home = os.environ['HOME']
+        print '  cleaning up and merging files'
         parCleanSorted.parClean(fN)
 
+def parCleanSplit(fN, numPackets):
+
+        #wait until done
+        checkExit(fN, numPackets)
+
+        #run cleanup script
+        print '  cleaning up for split run'
+        parCleanSorted.parCleanSplit(fN)
 
 if __name__ == "__main__":
         import sys

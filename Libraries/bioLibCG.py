@@ -440,6 +440,28 @@ def tccOverlap(tcc1, tcc2, amount = False):
 			return False
 		
 class cgTimer:
+        '''
+        myTimer = cgTimer()
+        myTimer.start()
+        stuff happens
+        
+        print myTimer.split()
+
+        straight up
+        time1 = time.time()
+
+        stuff happens
+
+        print (time.time() - time1)
+
+        def elapsedTime(oldTime):
+                print (time.time() - time1)
+
+        time1 = time.time()
+
+        print elapsedTime(time1)
+
+        '''
 	iTime = 0
 	lReport = 0
 	def start(self):

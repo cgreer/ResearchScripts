@@ -11,7 +11,7 @@ def markCenterExpression(aFN, wigDir, rn = None, tn = None):
         timer.start()
 
         aNX = cgNexusFlat.Nexus(aFN, cgAlignmentFlat.cgAlignment)
-        aNX.load(['centerExpression', 'tTcc', 'tStart', 'sLength'], [rn, tn])
+        aNX.load(['centerExpression', 'tTcc', 'tStart', 'sLength', 'tELevel'], [rn, tn])
         
         #load expression of degradome
         wigDict = cgWig.loadWigDict(wigDir)
@@ -31,6 +31,12 @@ def markCenterExpression(aFN, wigDir, rn = None, tn = None):
 
                 scanRange = bioLibCG.makeTcc(chrom, strand, start, end)
                 stretch = cgWig.getExpressionProfile(scanRange, wigDict)
+
+                #make sure peak is in the small range
+                peakLevel = aNX.tELevel[aID]
+                peakInRange = (peakLevel in stretch.values())
+                
+
                 expressionSum = sum(stretch.values())
                 sortedKeys = stretch.keys()
                 sortedKeys.sort()
@@ -39,7 +45,7 @@ def markCenterExpression(aFN, wigDir, rn = None, tn = None):
                         sortedKeys.reverse()
                 
 
-                if expressionSum != 0:
+                if expressionSum != 0 and peakInRange:
 
                         sumE = 0.0
                         for key in sortedKeys[8:12]:

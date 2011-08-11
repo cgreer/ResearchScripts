@@ -1,11 +1,12 @@
 import bioLibCG
 import sys
 
-
-rnaPairsGU = {'A': ['A'],
-              'T': ['T', 'C'],
-              'C': ['C'],
-              'G': ['G', 'A'],
+#!!!NOTE, the GT order is important.  The target db must contain the 3'->5'(comp) sequences.
+#the queries are 5'->3'(normal)
+rnaPairsGU = {'A': ['A', 'G'],
+              'T': ['T'],
+              'C': ['C', 'T'],
+              'G': ['G'],
               'N':[]
              }
 

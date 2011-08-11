@@ -182,12 +182,12 @@ def makeWigMem(fN, assembly, format = None, name = None, directory = None):
 		end = int(end)
 		if lChrom in cg.acceptableChroms:
 			
-                        '''
-			#wig for degradome
-			if lStrand == '1':
-				i = start + 20
+                        ''' 
+                        #wig for degradome NOTE:!!! change lStrand == '1' to '-1' for Bracken!
+			if lStrand == '-1':
+				i = start + (end - start)
 			else:
-				i = start
+				i = start + 1
 				
 			try:
 				hitDict[lChrom][lStrand][i] += 1
@@ -197,9 +197,10 @@ def makeWigMem(fN, assembly, format = None, name = None, directory = None):
 				if lStrand not in hitDict[lChrom]:
 					hitDict[lChrom][lStrand] = {}
 				hitDict[lChrom][lStrand][i] = 1
-			'''
-			
-			for i in range(start, end):
+
+                        '''                                
+                        #wig for regular
+                        for i in range(start, end):
 				try:
 					hitDict[lChrom][lStrand][i] += 1
 				except KeyError:
@@ -208,7 +209,7 @@ def makeWigMem(fN, assembly, format = None, name = None, directory = None):
 					if lStrand not in hitDict[lChrom]:
 						hitDict[lChrom][lStrand] = {}
 					hitDict[lChrom][lStrand][i] = 1
-					
+
 	f.close()
 	
 	#write results to wig file

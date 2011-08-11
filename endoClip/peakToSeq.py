@@ -1,10 +1,10 @@
 import bioLibCG
 import GenomeFetch
 
-def peakToSeq(peakFN, extend, outFN):
+def peakToSeq(peakFN, extend, outFN, assembly):
         #extend is +25 for degradome and -6/-4 for oRNA
         extend = int(extend)
-        gf = GenomeFetch.GenomeFetch('hg19')
+        gf = GenomeFetch.GenomeFetch(assembly)
 
         outF = open(outFN, 'w')
         f = open(peakFN, 'r')

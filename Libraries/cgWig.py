@@ -60,8 +60,7 @@ def loadWigDict(wigDir):
         chr_strand_coord_expr = {}
         
         for fN in bioLibCG.recurseDir(wigDir, end = '.wig'):
-                print fN
-                chrom, strand = fN.split('.')[1], fN.split('.')[2]
+                chrom, strand = fN.split('/')[-1].split('.')[1], fN.split('/')[-1].split('.')[2]
 
                 chr_strand_coord_expr.setdefault(chrom, {})[strand] = {}
                 f = open(fN, 'r')
@@ -86,6 +85,17 @@ def getExpressionProfile(tcc, wigDict):
         coord_value = {}
 
         for i in range(start, end + 1):
+                
+                if chrom not in wigDict:
+                        #print 'WARNING: %s not in wig files' % chrom
+                        coord_value[i] = 0 
+                        continue
+
+                if strand not in wigDict[chrom]:
+                        #print 'WARNING: %s, %s not in wig files' % (chrom, strand)
+                        coord_value[i] = 0
+                        continue
+
                 coord_value[i] = wigDict[chrom][strand].get(i, 0)
 
         return coord_value                

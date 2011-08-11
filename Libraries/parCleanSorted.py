@@ -32,6 +32,19 @@ def parClean(fN):
         for rFN in rangeFiles:
                 os.remove(rFN)
 
+def parCleanSplit(fN):
+        '''Remove the exit signals for a split continuation run'''
+        if '/' in fN:
+                dirName = os.path.dirname(fN)
+        else:
+                dirName = os.environ['PWD']
+
+        basename = os.path.basename(fN)
+
+        #remove the exit signals
+        for eFN in bioLibCG.recurseDir(dirName, start = basename, end = 'exitSignal'):
+                os.remove(eFN)
+
 if __name__ == "__main__":
         import sys
         bioLibCG.submitArgs(globals()[sys.argv[1]], sys.argv[1:])

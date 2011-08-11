@@ -64,6 +64,7 @@ class Nexus:
 	        self._selectedIDs = set()
                 self._conditions = {}
                 self._packetInfo = None
+                self._splitRunFlag = False
 
 	def bindAttribute(self, attributeName):
 		
@@ -94,7 +95,11 @@ class Nexus:
 			print 'getting id range'
                         idRange = getIDRange(paraInfo, self._dataFileName)
 	        '''
-                if paraInfo != [None, None]:
+                if paraInfo == ['splitRun', 'splitRun']:
+                        self._splitRunFlag = True
+                        paraInfo = [None, None] # now treat paraInfo as if there was nothing...
+                
+                if paraInfo != [None, None]: 
                         paraInfo[0] = int(paraInfo[0])
                         paraInfo[1] = int(paraInfo[1])
                         self._packetInfo = cgFile.getPacketInfo(self._dataFileName, paraInfo[1])[paraInfo[0] - 1]
@@ -253,13 +258,14 @@ class Nexus:
                 dataFile.file.close()
 
 		#output file
+                newLines = ''.join(newLines) #might cause less clogging if there is only one write operation...
 		f = open(outFN, 'w')
-		f.writelines(newLines)
+		f.write(newLines)
 		f.close()
 
 		#exit signal for parallel processes
                 '''if self._rangeSpecified:'''
-                if self._packetInfo:
+                if self._packetInfo or self._splitRunFlag:
                         f = open(outFN + '.exitSignal', 'w')
                         f.write('DONE')
                         f.close()

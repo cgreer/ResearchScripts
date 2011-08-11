@@ -12,3 +12,4 @@ class Peak:
         repeatStatus = Field('bool', False, 6)
         gSequence = Field('string', '.', 7)
         gScore = Field('int', 0, 8)
+        iContexts = Field('intList', list(), 11)

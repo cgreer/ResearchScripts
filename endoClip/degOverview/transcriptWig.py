@@ -7,7 +7,7 @@ def writeWigDictToWig(wigDict, chrom, strand, assembly, name, outDir, blankValue
 
         #init
         coords = sorted(wigDict.keys())
-        lDict = bioLibCG.returnChromLengthDict('hg19')
+        lDict = bioLibCG.returnChromLengthDict(assembly)
         chromEnd = lDict[chrom] 
 
         outFN = outDir + '/%s.%s.%s.wig' % (name, chrom, strand)
@@ -62,7 +62,7 @@ def writeWigDictToWig(wigDict, chrom, strand, assembly, name, outDir, blankValue
         f.write('%s\t%s\t%s\t%s\n' % (chrom, coord + 1, chromEnd, blankValue))
         f.close()
 
-def makeTranscriptWig(tranFN, wigDir, chrom, strand):
+def makeTranscriptWig(tranFN, wigDir, chrom, strand, species = 'hg19'):
 
         coord_id = {}
         f = open(tranFN, 'r')
@@ -83,9 +83,32 @@ def makeTranscriptWig(tranFN, wigDir, chrom, strand):
                 coord_id[i] = ','.join([x for x in set(ids.strip().split(' '))])
 
         #write wig to file                
-        writeWigDictToWig(coord_id, chrom, strand, 'hg19', 'transcript', wigDir, 'None')       
+        writeWigDictToWig(coord_id, chrom, strand, species, 'transcript', wigDir, 'None')       
         
-def makeContextWig(tranFN, wigDir, chrom, strand):
+def makeGeneWig(tranFN, wigDir, chrom, strand):
+
+        coord_id = {}
+        f = open(tranFN, 'r')
+        for line in f:
+                ls = line.strip().split('\t')
+                
+                tChrom, tStrand = ls[1], bioLibCG.switchStrandFormat(ls[2])
+                if tChrom != chrom or tStrand != strand:
+                        continue
+                gID = ls[10]
+                tStart, tEnd = int(ls[3]), int(ls[4]) - 1
+
+                for i in xrange(tStart, tEnd + 1):
+                        coord_id[i] = coord_id.get(i, '')  + '%s ' % gID
+
+        #unique, string
+        for i, ids in coord_id.iteritems():
+                coord_id[i] = ','.join([x for x in set(ids.strip().split(' '))])
+
+        #write wig to file                
+        writeWigDictToWig(coord_id, chrom, strand, 'hg19', 'transcript', wigDir, 'None')       
+
+def makeContextWig(tranFN, wigDir, chrom, strand, species = 'hg19'):
 
         p = bioLibCG.cgPrint()                               
         coord_id = {}
@@ -211,10 +234,10 @@ def makeContextWig(tranFN, wigDir, chrom, strand):
         
         #p.tell('finalInfo', utr5, exonPairs, utr3)
         #write wig to file                
-        writeWigDictToWig(coord_id, chrom, strand, 'hg19', 'context', wigDir, 'INTER')       
+        writeWigDictToWig(coord_id, chrom, strand, species, 'context', wigDir, 'INTER')       
 
-def makeTypeWig(tranFN, wigDir, chrom, strand): 
-        '''Using 15th column in transcripts for type info...might want to use something different?'''
+def makeTypeWig(tranFN, wigDir, chrom, strand, species): 
+        '''Using 14th column in transcripts for type info...might want to use something different?'''
 
         coord_id = {}
         f = open(tranFN, 'r')
@@ -225,7 +248,7 @@ def makeTypeWig(tranFN, wigDir, chrom, strand):
                 if tChrom != chrom or tStrand != strand:
                         continue
                 tID = ls[0]
-                tType = ls[14] 
+                tType = ls[13] 
                 tStart, tEnd = int(ls[3]), int(ls[4]) - 1 #0BASE CONVERSION !!! it might have to be 0BASE for making wig...?
 
                 tIDType = '%s:%s' % (tID, tType)       
@@ -237,7 +260,7 @@ def makeTypeWig(tranFN, wigDir, chrom, strand):
                 coord_id[i] = ','.join([x for x in set(ids.strip().split(' '))])
 
         #write wig to file                
-        writeWigDictToWig(coord_id, chrom, strand, 'hg19', 'tType', wigDir, 'None')       
+        writeWigDictToWig(coord_id, chrom, strand, species, 'tType', wigDir, 'None')       
 
 
 if __name__ == "__main__":

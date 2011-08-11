@@ -39,22 +39,23 @@ def updateAvgNumSS(oFN):
 
         oID_numSS = {}
 
-        for i in range(0,10):
+        for i in range(0,50):
                 
                 #simFN = '/home/chrisgre/scripts/simulations/simsk50FilteredMasked/simulation.%s/%s' % (i, bn)
-                simFN = '/home/chrisgre/scripts/simulations/simsk50/simulation.%s/%s' % (i, bn)
+                simFN = '/home/chrisgre/scripts/simulations/simsk50Fix/simulation.%s/%s' % (i, bn)
                 print simFN
                 osNX = cgNexusFlat.Nexus(simFN, cgOriginRNAFlat.OriginRNA)
                 osNX.load(['numSignificantSequences'])
                 for oID in osNX.numSignificantSequences:
                         oID_numSS[oID] = oID_numSS.get(oID, 0) + osNX.numSignificantSequences[oID]
+        
         #now save it
         oNX = cgNexusFlat.Nexus(oFN, cgOriginRNAFlat.OriginRNA)
         oNX.load(['avgNumSS'])
 
         for oID in oNX.avgNumSS:
                 totalNum = oID_numSS.get(oID, 0)
-                avgNum = float(totalNum)/float(10.0)
+                avgNum = float(totalNum)/float(50.0)
                 oNX.avgNumSS[oID] = avgNum
                 print oID, avgNum
         oNX.save()
@@ -107,8 +108,9 @@ def updateSNRSS(oFN):
         for oID in oNX.snrSS:
                 actualNum = oNX.numSignificantSequences[oID]
                 avgNum = oNX.avgNumSS[oID]
-                
-                if avgNum == 0: avgNum = 1
+         
+                if avgNum == 0:
+                        avgNum = 1
                 
                 SNR = float(actualNum)/avgNum
                 oNX.snrSS[oID] = SNR
@@ -118,7 +120,7 @@ def updateSNRSS(oFN):
 
 if __name__ == "__main__":
         import sys
-        bioLibCG.submitArgs(updateAvgNumTargets, sys.argv)        
-        bioLibCG.submitArgs(updateSNR, sys.argv)        
-        #bioLibCG.submitArgs(updateAvgNumSS, sys.argv)        
-        #bioLibCG.submitArgs(updateSNRSS, sys.argv)        
+        #bioLibCG.submitArgs(updateAvgNumTargets, sys.argv)        
+        #bioLibCG.submitArgs(updateSNR, sys.argv)        
+        bioLibCG.submitArgs(updateAvgNumSS, sys.argv)        
+        bioLibCG.submitArgs(updateSNRSS, sys.argv)        

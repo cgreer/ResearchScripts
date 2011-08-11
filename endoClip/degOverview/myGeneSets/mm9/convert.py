@@ -10,13 +10,40 @@ def getBracketList(a):
 
         return returnList                
 
+def convertMouseToHuman(fN):
+        
+
+        f = open(fN, 'r')
+        f.readline()
+        for line in f:
+                ls = line.strip().split('\t')
+                tID = ls[0]
+                chr = 'chr' + ls[1]
+                strand = ls[4]
+                tss, tse = ls[2], ls[3]
+                css, cse = tss, tss
+                exons = getBracketList(ls[18])
+                numExons = len(exons)
+                exonStarts = ','.join([x[0] for x in exons])
+                exonEnds = ','.join([x[1] for x in exons])
+                geneName = ls[8]
+                geneName = ensID_gID.get(geneName, geneName)
+                stat5 = 'none'
+                stat3 = 'none'
+                tCoding = 'pseudogene_noncoding'
+                unused = 'none'
+                gCoding = 'pseudogene_noncoding'
+
+
+                print '%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s' % (tID, chr, strand, tss, tse, css, cse, numExons, exonStarts, exonEnds, geneName, stat5, stat3, tCoding, unused, gCoding)
+
 def convertPsuedo(fN, nameFN):
         
         ensID_gID = {}
         f = open(nameFN, 'r')
         for line in f:
                 ls = line.strip().split('\t')
-                if ls[1] == '':
+                if len(ls) < 2:
                         continue
                  
                 ensID_gID[ls[0]] = ls[1]
@@ -154,6 +181,21 @@ def convertMirBase(fN, outFN):
 
         f.close()
         fOut.close()
+
+def addCodingStatsToProtein(fN, outFN):
+
+        fOut = open(outFN, 'w')
+        f = open(fN, 'r')
+        for line in f:
+                ls = line.strip().split('\t')
+                a = 'protein_coding'
+                ls[12] = a
+                ls.append(a)
+                ls.append(a)
+                
+                fOut.write('\t'.join(ls) + '\n')
+
+        f.close()                
 
 
 

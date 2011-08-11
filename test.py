@@ -1,14 +1,15 @@
 import bioLibCG
 import cgGenes3
 import dumpObj
+import time
+import sys
 
 
 def doit(fN):
-        geneSet = cgGenes3.createGeneSetEditing(fN)
 
-        for transcript in geneSet.transcripts:
-                if transcript.id == 'NM_031422':
-                        dumpObj.dumpObj(transcript)
+        for i in xrange(10):
+                sys.stdout.write('\r%s' % i)
+                time.sleep(.2)
 
 if __name__ == "__main__":
         import sys

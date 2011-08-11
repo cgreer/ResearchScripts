@@ -31,7 +31,6 @@ def updatePhastScores(oFN, phastFN, rn = None, tn = None):
 
         oNX.save()                
 
-
 def updateSequence(oFN, seqFN, rn = None, tn = None):
         
         oNX = cgNexusFlat.Nexus(oFN, cgOriginRNAFlat.OriginRNA)
@@ -249,12 +248,27 @@ def updateType(oFN, wigDir, chrom, strand, rn = None, tn = None):
         coord_types = cgWig.loadSingleWigContext(wigDir, chrom, strand, 'tType') 
         print 'done loading'
         
-        domOrder = ['protein_coding', 'miRNA', 'rRNA', 'snoRNA', 'snRNA', 'lincRNA', 'longNC', 'misc_RNA',
-                    'Mt_rRNA', 'Mt_tRNA', 'misc_RNA_pseudogene', 'Mt_tRNA_pseudogene', 'polymorphic_pseudogene',
-                    'processed_transcript', 'miRNA_pseudogene', 'rRNA_pseudogene', 'scRNA_pseudogene',
-                    'snoRNA_pseudogene', 'snRNA_pseudogene', 'tRNA_pseudogene', 'pseudogene', 'TR_C_gene',
-                    'TR_J_gene', 'TR_V_gene', 'TR_V_pseudogene', 'IG_C_gene', 'IG_C_pseudogene', 'IG_D_gene',
-                    'IG_J_gene', 'IG_J_pseudogene', 'IG_V_gene', 'IG_V_pseudogene', 'unknown']
+
+        domOrder = ['microRNA_noncoding',
+        'lincRNA_noncoding',
+        'longNC_noncoding',
+        'miRNA_pseudogene_noncoding',
+        'Mt_rRNA_noncoding',
+        'Mt_tRNA_noncoding',
+        'Mt_tRNA_pseudogene_noncoding',
+        'rRNA_noncoding',
+        'rRNA_pseudogene_noncoding',
+        'scRNA_pseudogene_noncoding',
+        'snoRNA_noncoding',
+        'snoRNA_pseudogene_noncoding',
+        'snRNA_noncoding',
+        'snRNA_pseudogene_noncoding',
+        'tRNA_pseudogene_noncoding',
+        'pseudogene_noncoding',
+        'protein_coding',
+        'None']
+
+
         ds = cg.dominantSpotter(domOrder)
 
 
@@ -264,10 +278,11 @@ def updateType(oFN, wigDir, chrom, strand, rn = None, tn = None):
                 if oChrom == chrom and oStrand == strand:
 
                         tranTypes = coord_types.get(start, 'None').split(',')
-                        types = [x.split(':')[1] if x != None else None for x in tranTypes]
+                        types = [x.split(':')[1] if x != 'None' else 'None' for x in tranTypes]
 
+                        types = list(set(types))
                         oNX.transcriptTypes[oID] = types 
-                        oNX.transcriptType = ds.spotItem(types)
+                        oNX.transcriptType[oID] = ds.spotItem(types)
 
         
         oNX.save()

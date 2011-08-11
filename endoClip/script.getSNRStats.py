@@ -55,26 +55,30 @@ def totalSNRSS(oFN):
 
         totalRun = 0 
         totalSim = 0
-        simsTotals = []
+
+        tRunHigh = 0
+        tSimHigh = 0
         n = 0
         highSNR = 0
         for oID in oNX.snrSS:
                 
                 #collect stats
                 totalRun += oNX.numSignificantSequences[oID]
-                simsTotal = oNX.avgNumSS[oID] * 10
-                simsTotals.append(simsTotal)
                 totalSim += oNX.avgNumSS[oID]
                 
                 if oNX.snrSS[oID] > 2:
                         highSNR += 1
+                        tRunHigh += oNX.numSignificantSequences[oID]
+                        tSimHigh += oNX.avgNumSS[oID]
+                        
                 n +=1
        
         print oFN
-        print 'Total Number Targets for my run:', totalRun
-        print 'Total Number Targets for Simulations:',  totalSim
-        print 'SNR', float(totalRun)/float(totalSim)
-        print 'Total oRNA:', n, 'Total oRNA w/ SNR > 2:', highSNR
+        #print 'Total # Targets data/sim: %s/%s' % (totalRun, totalSim)
+        #print 'SNR:', float(totalRun)/float(totalSim)
+        print 'SNR (iSNR > 2):', float(tRunHigh)/float(tSimHigh)
+        #print 'Total oRNA:', n 
+        print '# oRNA (>2):', highSNR
         print '\n' 
         #print 'stderr(%s)' % n, stdv(simsTotals)/sqrt(10)
 

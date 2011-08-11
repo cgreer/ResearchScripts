@@ -1,8 +1,15 @@
 import makePeakInput
 import subprocess
 
+#makePeakInput.makePeakInputQ('ovarySmall.conf', 20)
+#makePeakInput.mergeInputs('ovarySmall.conf', 20)
+
+#makePeakInput.makePeakInputQ('ovaryDeg.conf', 3)
+makePeakInput.mergeInputs('ovaryDeg.conf', 3)
+
 #makePeakInput.makePeakInputQ('siPeaks.conf', 20)
-makePeakInput.mergeInputs('siPeaks.conf', 20)
+#makePeakInput.mergeInputs('siPeaks.conf', 20)
+
 #makePeakInput.makePeakInputQ('siDegradome.conf', 4)
 #makePeakInput.mergeInputs('siDegradome.conf', 4)
 

@@ -18,7 +18,7 @@ def splitRun(baseFN, memoryAmount, scriptName, *args):
 
         for fN in rangeFiles:
 
-                #specific the correct qJob with correct memory
+                #specify the correct qJob with correct memory
                 qJobX = '%s/exec/qJobX%s.sh' % (os.environ['HOME'], memoryAmount)
                 qDo = '%s/exec/qDo.sh' % (os.environ['HOME'])
 
@@ -34,10 +34,11 @@ def splitRun(baseFN, memoryAmount, scriptName, *args):
                                 com.append(fN)
                         else:                                
                                 com.append(arg)
-                        
+                 
+                #now append paraInfo for split run [splitRun, splitRun]
+                com.extend(['splitRun', 'splitRun'])
                 #run each job
-                print com
-                #subprocess.Popen(com).wait()
+                subprocess.Popen(com).wait()
 
 if __name__ == "__main__":
         import sys

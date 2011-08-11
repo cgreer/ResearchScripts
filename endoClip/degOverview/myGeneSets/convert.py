@@ -16,7 +16,7 @@ def convertPsuedo(fN, nameFN):
         f = open(nameFN, 'r')
         for line in f:
                 ls = line.strip().split('\t')
-                if ls[1] == '':
+                if len(ls) < 2:
                         continue
                  
                 ensID_gID[ls[0]] = ls[1]

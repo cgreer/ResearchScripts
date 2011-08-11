@@ -41,7 +41,7 @@ def writeSetToWig(wigSet, chrom, strand, assembly, name, outDir):
 
 
 
-def makeRepeatWigs(selectedChrom, selectedStrand, wigFN, outDir):
+def makeRepeatWigs(selectedChrom, selectedStrand, wigFN, outDir, assembly):
         '''meant to be ran in parallel'''
         '''The repeats are strandless'''
 
@@ -50,7 +50,7 @@ def makeRepeatWigs(selectedChrom, selectedStrand, wigFN, outDir):
         f = open(wigFN, 'r')
         for line in f:
                 ls = line.strip().split('\t')
-                chrom, strand = ls[5], ls[9]
+                chrom = ls[5]
                 if chrom != selectedChrom:
                         continue
                 start, end = int(ls[6]), int(ls[7])
@@ -61,7 +61,7 @@ def makeRepeatWigs(selectedChrom, selectedStrand, wigFN, outDir):
 
         
         name = 'REPEAT'
-        writeSetToWig(rLocations, selectedChrom, selectedStrand, 'hg19', name, outDir)       
+        writeSetToWig(rLocations, selectedChrom, selectedStrand, assembly, name, outDir)       
 
 if __name__ == "__main__":
         import sys
