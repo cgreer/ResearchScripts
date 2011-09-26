@@ -16,16 +16,17 @@ timer.start()
 
 #initializing alignments
 print '...appending T Info'
-parRun(45, 3, '/home/chrisgre/myLibs/cgAlignmentFlat.py', 'appendTInfoFlat', aFN, dFN)
-parCleanSplit(aFN, 45)
+parRun(5, 3, '/home/chrisgre/myLibs/cgAlignmentFlat.py', 'appendTInfoFlat', aFN, dFN)
+parCleanSplit(aFN, 5)
 print timer.split()
 
 print '...updating paired interactions:  center expression'
-splitRun(aFN, 5, '/home/chrisgre/scripts/endoClip/updateMismatchAndMiddleFlat.py', 'markCenterExpression', 'splitFN', '/home/chrisgre/smallLibs/siRNA/degradome/wigsk50')
-parCleanSplit(aFN, 45)
+#splitRun(aFN, 5, '/home/chrisgre/scripts/endoClip/updateMismatchAndMiddleFlat.py', 'markCenterExpression', 'splitFN', '/home/chrisgre/smallLibs/siRNA/degradome/wigsk50')
+splitRun(aFN, 5, '/home/chrisgre/scripts/endoClip/updateMismatchAndMiddleFlat.py', 'markCenterExpression', 'splitFN', '/home/chrisgre/smallLibs/siRNA/degradome/Bracken/wigs/kidney')
+parCleanSplit(aFN, 5)
 print timer.split()
 
 print '...updating paired interactions:  center mismatch'
 splitRun(aFN, 3, '/home/chrisgre/scripts/endoClip/updateMismatchAndMiddleFlat.py', 'markMismatchedPairs', 'splitFN')
-parClean(aFN, 45)
+parClean(aFN, 5)
 print timer.split()

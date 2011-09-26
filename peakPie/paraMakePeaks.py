@@ -40,7 +40,8 @@ def roofPeakTest(tcc, pRange, minRoofVal, maxAvgNoise, maxDropVal, extend, minPe
 	        extend = int(extend)	
                 low = startFinal - extend
                 high = endFinal + extend
-                
+
+                print peakLength
                 if low > (1 - pRange) and high < pRange:
                         dropPassL = False
                         dropPassR = False
@@ -94,6 +95,8 @@ def extendPeakTest(tcc, pRange, minVal, maxAvgNoise, minPeakLength, maxPeakLengt
 	        
                 chrom, strand, peakPosition, end = cg.tccSplit(tcc)
 		cProfile = stepVectorScan.profileAroundPoint(tcc, pRange, cName, ratio = True)
+                cProfile2 = stepVectorScan.profileAroundPoint(tcc, pRange, cName, ratio = False) #just for debugging
+ 
 		
                 #extend this peak left and right
                 leftRange = range(1-pRange, 0)
@@ -104,18 +107,20 @@ def extendPeakTest(tcc, pRange, minVal, maxAvgNoise, minPeakLength, maxPeakLengt
                 startFinal = leftRange[-1]
 		for i in leftRange:
 			if cProfile[i] > minVal:
-				print ' extending stretch'
+                                pass
+                                #print ' extending stretch'
 			else:
-                                print ' end of stretch L'
+                                #print ' end of stretch L'
                                 startFinal = i + 1
                                 break
                 #right
                 endFinal = rightRange[-1]
                 for i in rightRange:
                         if cProfile[i] > minVal:
-                                print ' extending stretch'
+                                pass
+                                #print ' extending stretch'
                         else:
-                                print ' end of stretch R'
+                                #print ' end of stretch R'
                                 endFinal = i - 1
                                 break
 
@@ -130,7 +135,7 @@ def extendPeakTest(tcc, pRange, minVal, maxAvgNoise, minPeakLength, maxPeakLengt
                 lowRange = range(1 - pRange, low)
                 highRange = range(high + 1, pRange)
                 totalLength = len(lowRange) + len(highRange)
-                print totalLength, pRange, low, high, lowRange, highRange
+                print totalLength, pRange, low, high, lowRange, highRange, cProfile2[0]
                 for i in lowRange:
                         noiseExpression += cProfile[i]
                 for i in highRange:
@@ -154,7 +159,7 @@ def parallelMakePeaks(tcc, cName, minExpression):
 	chrom, strand, start, end = cg.tccSplit(tcc)
         peaks = cgPeaks.stretch(tcc, cName)
 		
-	#print 'getting peaks'
+	print 'getting peaks'
 	peaks.createPeaks(span = 1, minVal = int(minExpression))
         	
 	for x in peaks.peaks:

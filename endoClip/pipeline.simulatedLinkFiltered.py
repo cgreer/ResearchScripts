@@ -8,7 +8,7 @@ import blankIDs
 #fN and Init
 oFN = sys.argv[1]
 aFN = sys.argv[2] 
-aFilteredFN = aFN  #+ '.filtered'
+aFilteredFN = aFN #+ '.filtered'
 seqFN = sys.argv[3]
 
 timer = bioLibCG.cgTimer()

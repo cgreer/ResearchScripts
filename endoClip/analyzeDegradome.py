@@ -92,7 +92,7 @@ def degContextPie(degFN, iContextDir):
         plt.pie(fracs, labels=labels, colors = ('Gold', 'GoldenRod', 'MediumBlue', 'CornFlowerBlue', 'DarkRed', 'Teal', 'DarkSlateGray'), shadow = True)
         plt.show()
 
-def smallContextPie(oFN):
+def smallContextPie(oFN, title = 'Small RNA Peak Context'):
 
         #load degNX
         oNX = cgNexusFlat.Nexus(oFN, cgOriginRNAFlat.OriginRNA)
@@ -139,7 +139,7 @@ def smallContextPie(oFN):
         labels = ['%s (%s)' % (x, int(context_count[x])) for x in labels]
         
         #plot
-        plt.title('Small RNA Peak Context')
+        plt.title(title)
         plt.pie(fracs, labels=labels, colors = ('Gold', 'GoldenRod', 'MediumBlue', 'CornFlowerBlue', 'DarkRed', 'Teal', 'DarkSlateGray'), shadow = True)
         plt.show()
 

@@ -192,7 +192,7 @@ def plotByIDs(oID, aID, plotData):
         f.close() 
 
 
-def getPairInfo(oFN, aFN, oWigDir, aWigDir, outFN):
+def getPairInfo(oFN, aFN, oWigDir, aWigDir, outFN, assembly):
 
         oNX = cgNexusFlat.Nexus(oFN, cgOriginRNAFlat.OriginRNA)
         oNX.load(['tcc', 'filteredTargets', 'sequence'])
@@ -204,7 +204,7 @@ def getPairInfo(oFN, aFN, oWigDir, aWigDir, outFN):
         oWigDict = cgWig.loadWigDict(oWigDir)
         aWigDict = cgWig.loadWigDict(aWigDir)
        
-        myG = gf.GenomeFetch('hg19')
+        myG = gf.GenomeFetch(assembly)
 
         fOut = open(outFN, 'w')
         for oID in oNX.tcc:
@@ -258,7 +258,7 @@ def getPairInfo(oFN, aFN, oWigDir, aWigDir, outFN):
 
         fOut.close()                        
 
-def getPairInfo2(oFN, aFN, oWigDir, aWigDir, outFN):
+def getPairInfo2(oFN, aFN, oWigDir, aWigDir, outFN, assembly):
 
         oNX = cgNexusFlat.Nexus(oFN, cgOriginRNAFlat.OriginRNA)
         oNX.load(['tcc', 'filteredTargets'])
@@ -270,7 +270,7 @@ def getPairInfo2(oFN, aFN, oWigDir, aWigDir, outFN):
         oWigDict = cgWig.loadWigDict(oWigDir)
         aWigDict = cgWig.loadWigDict(aWigDir)
        
-        myG = gf.GenomeFetch('hg19')
+        myG = gf.GenomeFetch(assembly)
 
         fOut = open(outFN, 'w')
         for oID in oNX.tcc:

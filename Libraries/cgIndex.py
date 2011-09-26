@@ -110,7 +110,8 @@ def testSkip(low, high, check):
 	if check < i:
 		testSkip(low, i, check)
 	elif check == i:
-		print 'found it', i
+                pass
+		#print 'found it', i
 	else:
 		testSkip(i + 1, high, check)
 	
@@ -234,6 +235,8 @@ class lineIndex:
 		
 	def binarySkip(self, low, high, val):
 				
+                if low == high:
+                        raise NameError(' (%s) is not in file, use skipEnd if you want' % val)
 		i = low + (high -low)/2
 		checkLine = self.getLineFromByte(i)
 		check = self.checkFunction(val,checkLine)
@@ -252,6 +255,7 @@ class lineIndex:
 		value might not exactly be in the file'''
 		
 		i = low + (high -low)/2
+                #print low, high, i
 		checkLine = self.getLineFromByte(i)
 		check = self.checkFunction(val,checkLine)
                 #print i, low, high

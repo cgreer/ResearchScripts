@@ -1,7 +1,7 @@
 import bioLibCG
         
 def crossRefDict(fN, keyCol, valCol, keyCasteFxn, valCasteFxn):
-        
+        '''given two column Positions, make a dictionary with columns as keys and values''' 
         key_val = {}
         f = open(fN, 'r')
         for line in f:
@@ -17,6 +17,7 @@ def crossRefDict(fN, keyCol, valCol, keyCasteFxn, valCasteFxn):
 
 
 def crossUpdate(uFN, primaryKey, crossDict):
+        ''' given a dictionary and a key column, add dicts vals to new end column of file'''
 
         f = open(uFN, 'r')
         newLines = []
@@ -41,6 +42,25 @@ def cgJoin(uFN, jFN, updateKeyColumn, joinKeyColumn, joinValColumn):
         updateKeyColumn, joinKeyColumn, joinValColumn = int(updateKeyColumn), int(joinKeyColumn), int(joinValColumn)
         key_parameter = crossRefDict(jFN, joinKeyColumn, joinValColumn, str, str)
         crossUpdate(uFN, updateKeyColumn, key_parameter)
+
+        
+def collectColumns(fN, *args, **kArgs):
+        '''Memory dependent buy useful.  Maybe a generator solution would work with MemInd solution'''
+        '''colList, anotherColList = collectColumns(fN, 5, 7, header = True)'''
+
+        f = open(fN, 'r')
+        columns = [ list() for i in range(0, len(args)) ]
+
+        if kArgs.get('header', False):
+                f.readline() #readline if header is there
+        for line in f:
+                ls = line.strip().split('\t')
+                for i, colPosition in enumerate(args):
+                        columns[i].append(ls[colPosition])
+
+        f.close()
+
+        return columns
 
 def removeColumn(fN, columnNumber, blank = False):
         if blank == 'True':
@@ -86,6 +106,22 @@ def addColumn(fN, afterColumnNumber, addText):
         f = open(fN, 'w')
         f.writelines(newLines)
         f.close()
+
+def buildDictListTail(theDict, *args):
+ 
+        print args
+        lastArgNum = len(args) - 2 #second to last (1 for 0-base, 1 for 2nd to last)
+        carryOver = None
+        for i, arg in enumerate(args):
+                if i == lastArgNum:
+                        carryOver = carryOver.setdefault(arg, []).append(args[i + 1])
+                        break
+                elif i == 0:
+                        carryOver = theDict.setdefault(arg, {})
+                else:
+                        carryOver = carryOver.setdefault(arg, {})
+
+        return theDict                        
 
 
 if __name__ == "__main__":

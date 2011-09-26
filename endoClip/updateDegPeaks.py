@@ -54,6 +54,19 @@ def updateELevel(oFN, wigDir, rn = None, tn = None):
        
         oNX.save()
 
+def updateTOverlapOneRun(oFN, rn = None, tn = None):
+        '''Dont need to do it by chromosome because it is small enough'''
+        '''Also dont need to flip the strand because the wig is opposite as well'''
+
+        oNX = cgNexusFlat.Nexus(oFN, cgDegPeak.Peak)
+        oNX.load(['context', 'tOverlap'], [rn, tn])
+        
+        for oID in oNX.context:
+                
+                oNX.tOverlap[oID] = ('INTER' not in oNX.context[oID]) 
+       
+        oNX.save()
+
 def updateTranscriptOverlap(oFN, wigDir, chrom, strand, rn = None, tn = None):
         
         oNX = cgNexusFlat.Nexus(oFN, cgDegPeak.Peak)
@@ -282,6 +295,50 @@ def updateGScore(oFN, rn = None, tn = None):
 
                 oNX.gScore[oID] = gZipEntropy.gZipEntropy(oNX.gSequence[oID])
 
+
+        oNX.save()
+
+def updateRepeatCount(oFN, rCountFN, rn = None, tn = None):
+        
+        oNX = cgNexusFlat.Nexus(oFN, cgDegPeak.Peak)
+        oNX.load(['repeatCount'], [rn, tn])
+
+        id_count = {}
+        f = open(rCountFN, 'r')
+        for line in f:
+                ls = line.strip().split('\t')
+                id_count[int(ls[0])] = int(ls[1])
+
+
+        for oID in oNX.repeatCount:
+                oNX.repeatCount[oID] = id_count.get(oID, 0)
+
+
+
+        oNX.save()
+
+def updateTotalContig(oFN, rn = None, tn = None):
+
+        oNX = cgNexusFlat.Nexus(oFN, cgDegPeak.Peak)
+        oNX.load(['sequence', 'totalContig'], [rn, tn])
+
+        for oID in oNX.sequence:
+                seq = oNX.sequence[oID] 
+
+                highestLength = 1
+                cLength = 1
+                letters = list(seq)
+                for i,letter in enumerate(letters):
+                        if i == 0: continue
+
+                        if letters[i] == letters[i-1]:
+                                cLength += 1
+                                if cLength > highestLength:
+                                        highestLength = cLength
+                        else:
+                                cLength = 1
+
+                oNX.totalContig[oID] = highestLength
 
         oNX.save()
 

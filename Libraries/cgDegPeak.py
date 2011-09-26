@@ -13,3 +13,5 @@ class Peak:
         gSequence = Field('string', '.', 7)
         gScore = Field('int', 0, 8)
         iContexts = Field('intList', list(), 11)
+        repeatCount = Field('int', 0, 12)
+        totalContig = Field('int', 0, 13)

@@ -136,7 +136,7 @@ def intronBiasNormalized(degFN, iContextDir, insFN, minX = 0, maxX = 9000, inTyp
 
                         cChrom, cStrand, cStart, cEnd = bioLibCG.tccSplit(conTcc)
                         iLength = cEnd - cStart
-                        if iLength < 50: continue
+                        if iLength < 110: continue
                         if cStrand == '1':
                                 dist5 = start - cStart
                                 dist3 = cEnd - end
@@ -157,12 +157,8 @@ def intronBiasNormalized(degFN, iContextDir, insFN, minX = 0, maxX = 9000, inTyp
                                 break 
      
         print '# CONIDS in RANGE', len(conIDs)
-        print pos_dCount.keys()
-
-        '''
         for i in range(minX, maxX + 1):
                 print i, pos_dCount[i]
-        '''
 
         print '---'
 
@@ -190,6 +186,7 @@ def intronBiasNormalized(degFN, iContextDir, insFN, minX = 0, maxX = 9000, inTyp
                 dCount = pos_dCount[pos]
                 numIntrons = pos_numIntrons[pos]
                 score = float(dCount)/float(numIntrons)
+                score = dCount
                 scores.append(score)
         
         #get num overlapping nts for each CONTEXT

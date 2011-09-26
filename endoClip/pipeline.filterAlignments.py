@@ -14,8 +14,8 @@ timer.start()
 
 #filter targets
 print 'filtering targets'
-parRun(50, 3, '/home/chrisgre/scripts/endoClip/filteringFlat.py', 'filterTargetsInPlace', aFN, 'True', '1', '1', '.%s' % cLevel)
-parClean(aFN, 50)
+parRun(5, 3, '/home/chrisgre/scripts/endoClip/filteringFlat.py', 'filterTargetsInPlace', aFN, 'True', '1', '1', '.%s' % cLevel)
+parClean(aFN, 5)
 print timer.split()
 
 #make db smaller

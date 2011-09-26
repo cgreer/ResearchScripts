@@ -49,9 +49,23 @@ class Field:
                 self.dataDefault = dataDefault #prevents list aggregation
 		self.dataSlot = dataSlot
 
+def shellNexus(NX, dataFileName, select):
+
+    newNX = Nexus(dataFileName, NX._dataClass, NX.hasIDs)
+    newNX._attName_id_value = {}
+    newNX._selectedAttNames = select
+    newNX.loadTranscriptionInfo(select)
+    newNX._rangeSpecified = copy(NX._rangeSpecified)
+    newNX._selectedIDs = set()
+    newNX._packetInfo = copy(NX._packetInfo)
+    newNX._splitRunFlag = copy(NX._splitRunFlag)
+    newNX.hasIDs = NX.hasIDs
+
+    return newNX
+
 class Nexus:
 
-	def __init__(self, dataFileName, dataClass):
+	def __init__(self, dataFileName, dataClass, ids = True):
 		self._dataFileName = dataFileName
                 self._dataClass = dataClass
 		self._attName_id_value = {}
@@ -62,14 +76,32 @@ class Nexus:
 		self._selectedAttNames = []
 		self._rangeSpecified = []
 	        self._selectedIDs = set()
-                self._conditions = {}
                 self._packetInfo = None
                 self._splitRunFlag = False
+                self.hasIDs = ids
+        
+        def __str__(self):
+            newLines = []
+            for id in self.ids:
+                newLine = [str(id)]
+                
+                for attName in self._attName_id_value:
+                    newLine.append(str(self._attName_id_value[attName][id]))
+                newLines.append('\t'.join(newLine))    
 
-	def bindAttribute(self, attributeName):
+            return '\n'.join(newLines)
+
+        def collapseColumnNumbers(self, attNames):
+                
+                #make column numbers 0...n
+                for i, attName in enumerate(attNames):
+                    self._attName_columnPosition[attName] = i
+    
+	def bindAttributes(self, attributeNames):
 		
 		#bind data to class attribute for easy access
-		setattr(self, attributeName, self._attName_id_value[attributeName])
+                for attributeName in attributeNames:
+                    setattr(self, attributeName, self._attName_id_value[attributeName])
 	
 	def loadTranscriptionInfo(self, attNames):
 		'''loads caste fxns, column positions, default values for each selected attribute'''		
@@ -81,20 +113,27 @@ class Nexus:
 			self._attName_columnPosition[attName] = dataField.dataSlot
 			self._attName_defaultValue[attName] = dataField.dataDefault
 
-	def load(self, attNames, paraInfo = [None, None], idRange = [], conditions = {}):
-                '''paraInfo is [runNumber, numberOfRuns].  First parallel is checked, and then idRange'''
-                self._conditions = conditions
-                
-                myTimer = bioLibCG.cgTimer()
-                myTimer.start()
 
-		#if running a parallel job, split it into the right ids...
-		#print paraInfo, myTimer.split()
-                '''
-                if paraInfo != [None, None]:
-			print 'getting id range'
-                        idRange = getIDRange(paraInfo, self._dataFileName)
-	        '''
+        def initializeMasterDict(self):
+                #initialize master dict
+                for attName in self._selectedAttNames:
+                        self._attName_id_value[attName] = {}
+
+        def getNumberOfSlots(self):
+                try:
+                    f = open(self._dataFileName, 'r')
+                    numSlots = len(f.readline().split('\t'))
+                    f.close()
+                    return numSlots
+                except IOError:
+                    return 0
+
+        def linkIDsToColumn(self):
+                self.ids = eval('self.%s' % self._selectedAttNames[0])
+
+	def load(self, attNames, paraInfo = [None, None]):
+                '''paraInfo is [runNumber, numberOfRuns]'''
+                
                 if paraInfo == ['splitRun', 'splitRun']:
                         self._splitRunFlag = True
                         paraInfo = [None, None] # now treat paraInfo as if there was nothing...
@@ -104,65 +143,38 @@ class Nexus:
                         paraInfo[1] = int(paraInfo[1])
                         self._packetInfo = cgFile.getPacketInfo(self._dataFileName, paraInfo[1])[paraInfo[0] - 1]
                         
-                #print 'done getting id range', myTimer.split()
 		#if running parallel or specific range, mark range info
 		self._selectedAttNames = attNames		
 		
-                '''
-                if idRange:
-			self._rangeSpecified = [idRange[0], idRange[-1]]
-		'''
 
 		#get casting and column info
 		self.loadTranscriptionInfo(attNames)
 
-		#initialize master dict
-		for attName in attNames:
-			self._attName_id_value[attName] = {}
+                #init master dictionaries
+                self.initializeMasterDict()
 
 		#get number of slots
-		f = open(self._dataFileName, 'r')
-		numSlots = len(f.readline().split('\t'))
-		f.close()
+                numSlots = self.getNumberOfSlots()
 		
-                loadTime = 0.0
-                stripTime = 0.0
-                idTime = 0.0
-                tranTime = 0.0
-                conditionTime = 0.0
-
-                #print 'beginning skipping to file range', myTimer.split()
-                #skip to start of specified range
-                '''
-                if self._rangeSpecified:
-                        fIndex = cgIndex.lineIndex(self._dataFileName)
-                        fIndex.passCheckFunction(cgIndex.primaryIDCheckFunction)
-                        fIndex.binarySearch(self._rangeSpecified[0])
-                        f = fIndex.file
-                else:
-                        f = open(self._dataFileName, 'r')
-	        '''
-                
+                #open file and binary skip to correct line if packet            
                 dataFile = cgFile.cgFile(self._dataFileName)
                 if self._packetInfo:
                         dataFile.seekToLineStart(self._packetInfo[0])
-                #print 'done skipping', myTimer.split()
 
                 #transcribe values
-                '''for line in f:'''
+                currentID = 0
                 for line in dataFile.file:
 
 			ls = line.strip().split('\t')
-			id = int(ls[0]) #id is always first slot
+
+                        #get ID
+                        if self.hasIDs:
+                            id = int(ls[0]) #id is always first slot
+                        else:
+                            id = currentID
+                            currentID += 1
 		
-                        
-			#only transcribe selected range!
-			
-                        '''
-                        if idRange:
-				if id > idRange[1]:
-		                        break
-                        '''
+                        #stop if at end of range
                         if self._packetInfo:
                                 if id == self._packetInfo[1]:
                                         break
@@ -177,84 +189,49 @@ class Nexus:
 				else:
 					self._attName_id_value[attName][id] = copy(self._attName_defaultValue[attName])
 
-                        #do conditions
-                        if conditions:
-                                for attName in conditions:
-                                        if attName == 'ID':
-                                                if conditions['ID'](id):
-                                                        self._selectedIDs.add(id)
-                                                else:            
-                                                        for aName in attNames:
-                                                                del self._attName_id_value[aName][id]
-                                                
-                                        else:
-                                                if conditions[attName](self._attName_id_value[attName][id]):
-                                                        self._selectedIDs.add(id)
-                                                else:            
-                                                        for aName in attNames:
-                                                                del self._attName_id_value[aName][id]
-                '''f.close()'''
                 dataFile.file.close()
                 
-                #print 'done filling up master dict', myTimer.split()
-
 		#bind attribute names to dictionaries
-		for attName in attNames:
-			self.bindAttribute(attName)
+                self.bindAttributes(attNames)
 
-                #print 'done binding attribute names', myTimer.split()
-                #print 'done loading', self._dataFileName
+                #bind id attribute to first attribute, they all have the same ids...
+                self.linkIDsToColumn()
 
-
-	def save(self, outFN = None):
+        def save(self, outFN = None):
 		
 		if outFN == None: outFN = self._dataFileName
-		'''if self._rangeSpecified:
-			outFN += '.range.%s.%s' % (self._rangeSpecified[0], self._rangeSpecified[1]) 
-                '''
 
                 if self._packetInfo:
 			outFN += '.range.%s.%s' % (self._packetInfo[0], self._packetInfo[1]) 
 
                 
-                '''
-                #skip to start of specified range
-                if self._rangeSpecified:
-                        fIndex = cgIndex.lineIndex(self._dataFileName)
-                        fIndex.passCheckFunction(cgIndex.primaryIDCheckFunction)
-                        fIndex.binarySearch(self._rangeSpecified[0])
-                        f = fIndex.file
-                else:
-                        f = open(self._dataFileName, 'r')
-		'''
-
                 dataFile = cgFile.cgFile(self._dataFileName)
                 if self._packetInfo:
                         dataFile.seekToLineStart(self._packetInfo[0])
                 
                 #create new file contents
+                currentID = 0
 		newLines = []
-		'''for line in f:'''
                 for line in dataFile.file:
 			ls = line.strip().split('\t')
-			id = int(ls[0])
+			
+                        if self.hasIDs:
+                            id = int(ls[0])
+                        else:
+                            id = currentID
+                            currentID += 1
                         
-                        #stop checking for ids once out of range
-                        
-                        '''if self._rangeSpecified:
-				if id > self._rangeSpecified[1]: break
-                        '''
                         if self._packetInfo:
                                 if id == self._packetInfo[1]: break
 
                         #save the rest
+                        #TODO: lineUpdate with multiple injections
 			for attName in self._selectedAttNames:
 				newVal = self._attName_casteToFxn[attName](self._attName_id_value[attName][id])
 				ls = lineUpdate(ls, newVal, self._attName_columnPosition[attName])
 
                         #only one newLine no matter the amount of attributes updated	
 			newLines.append('%s\n' % '\t'.join(ls))
-		'''f.close()'''
                 dataFile.file.close()
 
 		#output file
@@ -264,9 +241,21 @@ class Nexus:
 		f.close()
 
 		#exit signal for parallel processes
-                '''if self._rangeSpecified:'''
                 if self._packetInfo or self._splitRunFlag:
                         f = open(outFN + '.exitSignal', 'w')
                         f.write('DONE')
                         f.close()
+
+def quickTable(*args):
+    '''make a class for nexus to use as table template
+    on the fly
+    args are 4tuples (attName, type, defVal, colPosition)'''
+    
+    class QuickTable: pass
+
+    for col in args:
+        setattr(QuickTable, col[0], Field(col[1], col[2], col[3]))
+    
+    return QuickTable
+
 

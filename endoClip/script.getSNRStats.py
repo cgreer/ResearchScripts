@@ -73,13 +73,16 @@ def totalSNRSS(oFN):
                         
                 n +=1
        
-        print oFN
+        #print oFN
         #print 'Total # Targets data/sim: %s/%s' % (totalRun, totalSim)
         #print 'SNR:', float(totalRun)/float(totalSim)
-        print 'SNR (iSNR > 2):', float(tRunHigh)/float(tSimHigh)
+        try:
+                #print 'SNR (iSNR > 2):', float(tRunHigh)/float(tSimHigh)
+                print 'SNR:', float(tRunHigh)/float(tSimHigh)
+        except:
+                print 'SNR: 0.0'
         #print 'Total oRNA:', n 
-        print '# oRNA (>2):', highSNR
-        print '\n' 
+        print '#:', highSNR
         #print 'stderr(%s)' % n, stdv(simsTotals)/sqrt(10)
 
 if __name__ == "__main__":

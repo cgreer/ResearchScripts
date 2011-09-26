@@ -26,6 +26,9 @@ class cgAlignment:
         gScore = Field('int', 0, 19)
         targetSequence = Field('string', '.', 20)
         type = Field('string', '.', 21)
+        mm9Tcc = Field('string', '.', 22)
+        repeatCount = Field('int', 0, 23)
+        totalContig = Field('int', 0, 24)
 
 def appendTInfo(aFN, degSmallFN, rn = None, tn = None):
 
@@ -69,6 +72,8 @@ def appendTInfoFlat(aFN, dFN, rn = None, tn = None):
                         aNX.repeat[aID] = dNX.repeatStatus[dID]
                         aNX.gScore[aID] = dNX.gScore[dID]
                         aNX.targetSequence[aID] = dNX.sequence[dID]
+                        aNX.repeatCount[aID] = dNX.repeatCount[dID]
+                        aNX.totalContig[aID] = dNX.totalContig[dID]
         aNX.save()                        
 
 def appendTranInfo(aFN, degSmallFN, rn = None, tn = None):
