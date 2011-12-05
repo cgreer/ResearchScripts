@@ -32,10 +32,10 @@ def positionsMappedHist(oFN, rn = None, tn = None):
         plt.hist(histVals)
         plt.show()
 
-def oRNAContextPie(oFN, rn = None, tn = None):
+def oRNAContextPie(oFN, imgName):
         '''REMEMBER!!! Have to do with grouped results...''' 
         oNX = cgNexusFlat.Nexus(oFN, cgOriginRNAFlat.OriginRNA)
-        oNX.load(['context', 'snrSS'], [rn, tn])
+        oNX.load(['context', 'snrSS'])
 
         context_count = {}
 
@@ -57,9 +57,9 @@ def oRNAContextPie(oFN, rn = None, tn = None):
         #plot
         plt.title('Context of oRNA (results > 2.00 SNR)')
         plt.pie(fracs, labels=labels, shadow = True)
-        plt.show()
+        plt.savefig(imgName, bbox_inches='tight', pad_inches=1)
 
-def oRNATypePie(oFN, rn = None, tn = None):        
+def oRNATypePie(oFN, imgName):        
         
         oNX = cgNexusFlat.Nexus(oFN, cgOriginRNAFlat.OriginRNA)
         oNX.load(['snrSS', 'transcriptType', 'transcriptTypes'], [rn, tn])
@@ -84,9 +84,9 @@ def oRNATypePie(oFN, rn = None, tn = None):
         
         #plot
         plt.pie(fracs, labels=labels, shadow = True)
-        plt.show()
+        plt.savefig(imgName, bbox_inches='tight', pad_inches=1)
 
-def degPeakRepeatCountECDF(fn1, fn2, heightLimit = 1000):
+def degPeakRepeatCountECDF(fn1, fn2, imgName, heightLimit = 1000):
 
         aNX = cgNexusFlat.Nexus(fn1, cgDegPeak.Peak)
         aNX.load(['repeatCount'])
@@ -120,9 +120,9 @@ def degPeakRepeatCountECDF(fn1, fn2, heightLimit = 1000):
         plt.xlabel('repeatCount')
         plt.ylabel('% <= repeatCount')
         plt.legend()
-        plt.show()
+        plt.savefig(imgName, bbox_inches='tight', pad_inches=1)
 
-def degPeakHistoContext(aFN, heightLimit = 1000):
+def degPeakHistoContext(aFN, imgName, heightLimit = 1000):
 
         aNX = cgNexusFlat.Nexus(aFN, cgDegPeak.Peak)
         aNX.load(['context', 'eLevel', 'repeatStatus', 'gScore'])
@@ -164,9 +164,9 @@ def degPeakHistoContext(aFN, heightLimit = 1000):
         plt.xlabel('log peakHeight')
         plt.ylabel('% <= peakHeight')
         plt.legend()
-        plt.show()
+        plt.savefig(imgName, bbox_inches='tight', pad_inches=1)
 
-def countRepeatStatusTargets(oFN, aFN, oContext = None, oType = None, rn = None, tn = None):
+def countRepeatStatusTargets(oFN, aFN, oContext = None, oType = None):
         if oContext == 'None': oContext = None
         if oType == 'None': oType = None
                 
@@ -192,7 +192,7 @@ def countRepeatStatusTargets(oFN, aFN, oContext = None, oType = None, rn = None,
         for context in context_rStatuss:
             print context, context_rStatuss[context].count(True), context_rStatuss[context].count(False)         
 
-def gZipContextECDF(oFN, aFN, oContext = None, oType = None, rn = None, tn = None):
+def gZipContextECDF(oFN, aFN, imgName, oContext = None, oType = None):
         if oContext == 'None': oContext = None
         if oType == 'None': oType = None
                 
@@ -220,17 +220,17 @@ def gZipContextECDF(oFN, aFN, oContext = None, oType = None, rn = None, tn = Non
                         histtype = 'step', normed = True, label = '%s' % context)
         
         plt.legend()
-        plt.show()
+        plt.savefig(imgName, bbox_inches='tight', pad_inches=1)
 
-def targetContextPie(oFN, aFN, oContext = None, oType = None, rn = None, tn = None):
+def targetContextPie(oFN, aFN, imgName, oContext = None, oType = None):
         if oContext == 'None': oContext = None
         if oType == 'None': oType = None
         
         oNX = cgNexusFlat.Nexus(oFN, cgOriginRNAFlat.OriginRNA)
-        oNX.load(['snrSS', 'context', 'transcriptType', 'filteredTargets'], [rn, tn])
+        oNX.load(['snrSS', 'context', 'transcriptType', 'filteredTargets'])
 
         aNX = cgNexusFlat.Nexus(aFN, cgAlignmentFlat.cgAlignment)
-        aNX.load(['context'], [rn, tn])
+        aNX.load(['context'])
 
         context_count = {}
 
@@ -264,9 +264,9 @@ def targetContextPie(oFN, aFN, oContext = None, oType = None, rn = None, tn = No
         #plot
         plt.title('Context of Targets (results > 2.00 SNR)\n oContext: %s, oType: %s' % (oContext, oType))
         plt.pie(fracs, labels=labels, shadow = True)
-        plt.show()
+        plt.savefig(imgName, bbox_inches='tight', pad_inches=1)
 
-def targetTypePie(oFN, aFN, oContext = None, oType = None, rn = None, tn = None):
+def targetTypePie(oFN, aFN, imgName, oContext = None, oType = None):
         if oContext == 'None': oContext = None
         if oType == 'None': oType = None
 
@@ -307,7 +307,7 @@ def targetTypePie(oFN, aFN, oContext = None, oType = None, rn = None, tn = None)
         #plot
         plt.title('Type of Targets (results > 2.00 SNR)\n oContext: %s, oType: %s' % (oContext, oType))
         plt.pie(fracs, labels=labels, shadow = True)
-        plt.show()
+        plt.savefig(imgName, bbox_inches='tight', pad_inches=1)
 
 def targetContextPercentageVsExpression(oFN, aFN, oContext = None, oType = None, rn = None, tn = None):
         

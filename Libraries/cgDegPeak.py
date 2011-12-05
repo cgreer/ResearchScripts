@@ -15,3 +15,4 @@ class Peak:
         iContexts = Field('intList', list(), 11)
         repeatCount = Field('int', 0, 12)
         totalContig = Field('int', 0, 13)
+        type = Field('string', '.', 14)

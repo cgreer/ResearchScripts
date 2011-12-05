@@ -4,6 +4,7 @@ import cgAlignmentFlat
 import cgWig
 import cgNexusFlat
 import gZipEntropy
+from cgAutoCast import autocast
 
 def updateTcc(oFN, tccFN, rn = None, tn = None):
 
@@ -65,6 +66,18 @@ def updateTOverlapOneRun(oFN, rn = None, tn = None):
                 
                 oNX.tOverlap[oID] = ('INTER' not in oNX.context[oID]) 
        
+        oNX.save()
+
+def updateTranscriptOverlapSimple(dFN, rn = None, tn = None):
+        
+        oNX = cgNexusFlat.Nexus(dFN, cgDegPeak.Peak)
+        oNX.load(['tOverlap', 'context'], [rn, tn])
+
+        
+        for id in oNX.ids:
+                oNX.tOverlap[id] = ("INTER" != oNX.context[id])
+
+                
         oNX.save()
 
 def updateTranscriptOverlap(oFN, wigDir, chrom, strand, rn = None, tn = None):
@@ -367,16 +380,19 @@ def updateRepeatStatus(oFN, wigDir, chrom, strand):
 
         oNX.save()
 
-def updateIContext(oFN, wigDir, chrom, strand, rn = None, tn = None):
-        
+@autocast
+def updateIContext(oFN, wigDir, chrom, strand, switchStrand = True):
+
+        strand = str(strand)
+
         oNX = cgNexusFlat.Nexus(oFN, cgDegPeak.Peak)
-        oNX.load(['tcc', 'iContexts'], [rn, tn])
+        oNX.load(['tcc', 'iContexts'])
         
-         
-        if strand == '1':
-                strand = '-1'
-        else:
-                strand = '1'
+        if switchStrand:         
+            if strand == '1':
+                    strand = '-1'
+            else:
+                    strand = '1'
         
         print 'loading wig'
         coord_contexts = cgWig.loadSingleWigContext(wigDir, chrom, strand, 'iContext') 
@@ -387,10 +403,11 @@ def updateIContext(oFN, wigDir, chrom, strand, rn = None, tn = None):
                 oChrom, oStrand, start, end = bioLibCG.tccSplit(oNX.tcc[oID])
                 
                 #deg wigs is AS to actual clipping site
-                if oStrand == '1':
-                        oStrand = '-1'
-                else:
-                        oStrand = '1'
+                if switchStrand:
+                    if oStrand == '1':
+                            oStrand = '-1'
+                    else:
+                            oStrand = '1'
         
                 if oChrom == chrom and oStrand == strand:
 

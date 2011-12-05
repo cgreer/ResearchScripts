@@ -676,6 +676,24 @@ def tccSplit(tcc, text = False):
 	
 	return (chrom, strand, start, end)
 
+def switchStrand(strand):
+
+    if strand == '+':
+        return '-'
+    elif strand == '1':
+        return '-1'
+    elif strand == '-':
+        return '+'
+    elif strand == '-1':
+        return '1'
+    elif strand == 1:
+        return -1
+    elif strand == -1:
+        return 1
+    else:
+        print 'NOT A STRAND FORMAT!'
+        return 0 
+
 def switchStrandFormat(strand):
 
         if strand == '+':
@@ -697,7 +715,12 @@ def convertToAS(tcc):
 		strand = '1'
 	
 	return makeTcc(chrom, strand, start, end)
-	
+
+def tccToGB(tcc):
+    chrom, strand, start, end = tccSplit(tcc)
+
+    return '%s:%s-%s' % (chrom, start, end)
+
 def returnChromLengthDict(assembly):
 	mConf = c.getConfig('Main.conf')
 	lenFileName = mConf.conf['chromosomeLengths'] + '/' + assembly
@@ -747,6 +770,22 @@ def submitArgs(fxn, args):
 		return fxn(args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8], args[9], args[10], args[11]) 
 	elif largs == 13:
 		return fxn(args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8], args[9], args[10], args[11], args[12]) 
+
+def submitArgs2(*args):
+        '''up to 9, worst written function in history of computers... but pretty :P '''
+
+        #check for kw args 
+        for arg in args:
+            if type(arg) == type("string"):
+                if "=" in arg:
+                    raise NameError("no key word args allowed for CLI")
+                    return 1
+    
+
+        #run fxn 
+        restOfArgs = args[1:]
+        return fxn(restOfArgs)
+
 
 def uniqueList(list):
         uniq = []

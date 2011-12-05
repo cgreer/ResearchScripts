@@ -4,8 +4,6 @@ import cgNexusFlat
 from cgAutoCast import autocast
 import cgOriginRNAFlat
 
-a = 3
-
 def testSQL(oFN):
     
     NX = cgNexusFlat.Nexus(oFN, cgOriginRNAFlat.OriginRNA)
@@ -19,11 +17,11 @@ def testSQL(oFN):
     ents = sqlAddOn.collect(sNX, select = ['filteredTargets'],
                                 where = 'len( $filteredTargets ) > 1',
                                 unique = False)
-
-    global a 
-    a = 4
+    global a
+    a = 3
     sqlAddOn.update(sNX, sets = ['$entropy = $entropy + a',
-                                '$filteredTargets = $filteredTargets'])
+                                '$filteredTargets = $filteredTargets'], g = globals())
+    print sNX
 
 if __name__ == "__main__":
     import sys

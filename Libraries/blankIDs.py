@@ -30,16 +30,19 @@ def copyIDs(fN, outFN):
         f.close()
         fOut.close()
 
-def addIDs(fN, outFN, header = False):
+def addIDs(fN, outFN, header = False, startID = 0):
         '''Add IDs to the first coluimn'''
         if header == 'True':
                 header = True
+        else:
+                header = False
+        startID = int(startID)
 
         newLines = []
         f = open(fN, 'r')
         if header:
                 f.readline()
-        i = 0
+        i = startID
         for line in f:
                 ls = line.strip().split('\t')
                 newLines.append('%s\t%s\n' % (i, '\t'.join(ls)))
@@ -49,13 +52,15 @@ def addIDs(fN, outFN, header = False):
         f = open(outFN, 'w')
         f.writelines(newLines)
         f.close()
-        
-def redoIDs(fN, outFN):
+
+def redoIDs(fN, outFN, startID = 0):
         '''Re-add IDs to the first column'''
+        startID = int(startID)
+
         
         newLines = []
         f = open(fN, 'r')
-        i = 0
+        i = startID
         for line in f:
                 ls = line.strip().split('\t')
                 ls[0] = str(i)

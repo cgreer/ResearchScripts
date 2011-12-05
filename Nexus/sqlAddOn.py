@@ -10,15 +10,13 @@ from cgAutoCast import autocast
 
 #Note: passing more parameters to a fxn costs time...
 
-def createConditionalFxn(condExpression, justExpression = False):
+def createConditionalFxn(condExpression, g = globals()):
     '''$att is for firstNX, &att is for 2nd.  Only two supported
     The dynamic variables ($/&)att replaced with fNX.att[x]
     Each condFxn has 4 variables even if only 2 are used
     there must be spaces in expression el can't parse.  This
-    can be fixed by checking for att in class...
+    can be fixed by checking for att in class...'''
     
-    justExpression gives the text of the expression of the lambda fxn that
-    would be made (everything after the ':' instead of the actual lambda fxn'''    
    
     for dynMark, NX, idVar in ( ('$', 'fNX.', '[x]'), ('&', 'sNX.', '[y]') ):
         #get dynamic features
@@ -28,13 +26,11 @@ def createConditionalFxn(condExpression, justExpression = False):
         #replace dynVars with NX.att[$/&]
         for var in dynVars:
             condExpression = condExpression.replace(var, NX + var[1:] + idVar)
-    
+   
+    print 'a' in g
     lambdaText = 'lambda fNX, x, sNX, y: %s' % condExpression
     print lambdaText
-    if justExpression:
-        return condExpression
-    else:
-        return eval(lambdaText)
+    return eval(lambdaText, g)
      
 def collect(NX, select = [], where = '', unique = False):
     '''put items in column selected columns into a list
@@ -157,9 +153,7 @@ def join(NX, NX2, select = [], where = '', on = '', into = []):
 
     pass
 
-
-
-def update(NX, sets = [], where = ''):
+def update(NX, sets = [], where = '', g = {}):
     ''' set is '$sequence = 'AAAA' .  Might want to check
     for equals sign and only one attribute on left side
         
@@ -189,7 +183,7 @@ def update(NX, sets = [], where = ''):
         expressionString = set.split('=')[1]
         print attName, expressionString
 
-        attExpression = createConditionalFxn(expressionString)
+        attExpression = createConditionalFxn(expressionString, g = g)
         attribute = eval('NX.%s' % attName )
         attributes.append(attribute)
         expressions.append(attExpression)

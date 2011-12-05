@@ -1,13 +1,13 @@
 import os
 import math
-import numpy
+import cgMath
 import bioLibCG
 
 def getPacketInfo(fN, numPackets):
         #packet info is the (a,b) where a is byte of starting line, and b is id of ending line
         numPackets = int(numPackets)
         file = cgFile(fN)
-        splitPoints = [int(math.floor(x)) for x in numpy.linspace(0, file.fileSize, numPackets + 1)]
+        splitPoints = [int(math.floor(x)) for x in cgMath.linspace(0, file.fileSize, numPackets + 1)]
         packetInfo = []
         idInfo = []
 

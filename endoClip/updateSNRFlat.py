@@ -39,12 +39,15 @@ def updateAvgNumSS(oFN):
 
         oID_numSS = {}
 
-        for i in range(0,50):
+        numSims = 100
+
+        print 'getting avg for %s simulations' % numSims
+        for i in range(0,numSims):
                 
                 #simFN = '/home/chrisgre/scripts/simulations/simsk50FilteredMasked/simulation.%s/%s' % (i, bn)
                 #simFN = '/home/chrisgre/scripts/simulations/simsk50Fix/simulation.%s/%s' % (i, bn)
-                simFN = '/home/chrisgre/scripts/simulations/mm9/simulation.%s/%s' % (i, bn)
-                print simFN
+                #simFN = '/home/chrisgre/scripts/simulations/mm9/simulation.%s/%s' % (i, bn)
+                simFN = '/home/chrisgre/scripts/simulations/hg19.hela/simulation.%s/%s' % (i, bn)
                 osNX = cgNexusFlat.Nexus(simFN, cgOriginRNAFlat.OriginRNA)
                 osNX.load(['numSignificantSequences'])
                 for oID in osNX.numSignificantSequences:
@@ -56,9 +59,8 @@ def updateAvgNumSS(oFN):
 
         for oID in oNX.avgNumSS:
                 totalNum = oID_numSS.get(oID, 0)
-                avgNum = float(totalNum)/float(50.0)
+                avgNum = float(totalNum)/float(numSims)
                 oNX.avgNumSS[oID] = avgNum
-                print oID, avgNum
         oNX.save()
 
 def countForError(oDir, filteredFile):
@@ -106,17 +108,20 @@ def updateSNRSS(oFN):
         oNX = cgNexusFlat.Nexus(oFN, cgOriginRNAFlat.OriginRNA)
         oNX.load(['avgNumSS', 'numSignificantSequences', 'snrSS'])
 
+        zeroCount = 0 #keeps tracks of the amount of simulations with 0 targets 
         for oID in oNX.snrSS:
                 actualNum = oNX.numSignificantSequences[oID]
                 avgNum = oNX.avgNumSS[oID]
          
+                #give them one target for sims if none 
                 if avgNum == 0:
+                        zeroCount += 1
                         avgNum = 1
                 
                 SNR = float(actualNum)/avgNum
                 oNX.snrSS[oID] = SNR
 
-
+        print '# oRNA with 0 simulation targets: %s' % zeroCount 
         oNX.save()
 
 if __name__ == "__main__":

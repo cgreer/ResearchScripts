@@ -3,37 +3,38 @@ import cgNexusFlat
 from cgAutoCast import autocast
 import microSeq
 
+
 @autocast
 def getLongestRepeat(seq, minTimes, kmerLength):
     
     #get all di seqs, uniquify
     kSeqs = bioLibCG.returnFrames(seq, kmerLength)
     kSeqs = set(kSeqs)
+    seqLength = len(seq)
 
     highestSLen = 0
     for kmer in kSeqs:
-        #slides
         for slide in range(0, kmerLength):
-
             sLen = 0
-            for i in range(slide, len(seq), kmerLength):
-
-                try:
-                    if seq[i:i + kmerLength] == kmer:
-                        sLen += 1
-                    else:
-                        #if stretch is long enough, mask
+            adjustedRange = seqLength - (kmerLength - 1) #takes into account excluding right side numbers
+            scanRange = range(slide, adjustedRange, kmerLength)
+            for i in scanRange:
+                #print seq[:i] + ' [' + seq[i:i + kmerLength] + ']', highestSLen, sLen, i, i + kmerLength
+                if (seq[i:i + kmerLength] == kmer):
+                    sLen += 1
+                    
+                    #take care of last nt
+                    if i == scanRange[-1]:
                         if sLen >= minTimes:
                             if sLen > highestSLen: highestSLen = sLen
                             sLen = 0
-                        else:
-                            sLen = 0
-                except IndexError:
-                    #check for masking
-                    if sLen > minTimes:
+
+                else:
+                    #if stretch is long enough, mask
+                    if sLen >= minTimes:
                         if sLen > highestSLen: highestSLen = sLen
-                        sLen = 0
-    print highestSLen                        
+                    sLen = 0                            
+    
     return highestSLen
 
 def updateTotalContig(oFN, rn = None, tn = None):

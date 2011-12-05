@@ -90,28 +90,31 @@ def filterTargetsInPlace(aFN, inTranscript, misLevel, centerLevel, minCenterLeve
         for aID in aNX.passed:
 
                 aNX.passed[aID] = False
-
+                print 'testing', aID
+                testString = '%s %s %s' % (aNX.transcriptOverlap[aID], aNX.mismatchStatus[aID], aNX.centerExpression[aID])
                 #transcriptOverlap
                 if inTranscript:
                         if not aNX.transcriptOverlap[aID]:
                                 #print 'tOverlap Fail', cgAlignment.pretty#print(alignment)
+                                print 'tOverlap Fail', testString
                                 continue
 
                 #misLevel
                 if aNX.mismatchStatus[aID][misLevel]:
                         #print 'mismatch Fail', cgAlignment.pretty#print(alignment)
+                        print 'mismatch Fail', testString
                         continue
                    
                 #centerLevel
                 if aNX.centerExpression[aID][centerLevel] < minCenterLevel:
                         #print 'expression Fail', cgAlignment.pretty#print(alignment)
+                        print 'centerExpression', testString
                         continue
                 
+                print 'made it here'
                 aNX.passed[aID] = True
 
         aNX.save()                       
-
-
 
 
 if __name__ == "__main__":

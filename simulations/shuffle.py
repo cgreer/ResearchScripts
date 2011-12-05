@@ -37,9 +37,41 @@ def kMask(seq, mask, minTimes, kmerLength):
         
         return mask
 
+def getLongestRepeat(seq, minTimes, kmerLength):
+    
+    #get all di seqs, uniquify
+    kSeqs = bioLibCG.returnFrames(seq, kmerLength)
+    kSeqs = set(kSeqs)
+    seqLength = len(seq)
+
+    highestSLen = 0
+    for kmer in kSeqs:
+        for slide in range(0, kmerLength):
+            sLen = 0
+            adjustedRange = seqLength - (kmerLength - 1) #takes into account excluding right side numbers
+            scanRange = range(slide, adjustedRange, kmerLength)
+            for i in scanRange:
+                #print seq[:i] + ' [' + seq[i:i + kmerLength] + ']', highestSLen, sLen, i, i + kmerLength
+                if (seq[i:i + kmerLength] == kmer):
+                    sLen += 1
+                    
+                    #take care of last nt
+                    if i == scanRange[-1]:
+                        if sLen >= minTimes:
+                            if sLen > highestSLen: highestSLen = sLen
+                            sLen = 0
+
+                else:
+                    #if stretch is long enough, mask
+                    if sLen >= minTimes:
+                        if sLen > highestSLen: highestSLen = sLen
+                    sLen = 0                            
+    
+    return highestSLen
+
 def multiMask(seq, mask = []):
-        mask = kMask(seq, mask, 3, 1)
-        mask = kMask(seq, mask, 2, 2)
+        mask = kMask(seq, mask, 5, 1)
+        mask = kMask(seq, mask, 3, 2)
         mask = kMask(seq, mask, 2, 3)
         mask = kMask(seq, mask, 2, 4)
         mask = kMask(seq, mask, 2, 5)
@@ -148,6 +180,9 @@ def getTotalContigLength(seq):
         
         return highestLength
 
+
+
+
 def seqShuffle(seq, mask, timesShuffled = 1):
 
         seqL = len(seq)
@@ -174,6 +209,19 @@ def seqShuffle(seq, mask, timesShuffled = 1):
         return seq
 
 
+def passContigFilter(seq):
+    
+    m = getLongestRepeat(seq, 4, 1) 
+    d = getLongestRepeat(seq, 2, 2) 
+    t = getLongestRepeat(seq, 2, 3) 
+    q = getLongestRepeat(seq, 2, 4) 
+
+    if (m > 5) or (d > 3) or (t > 2) or (q > 2):
+        return False
+    else:
+        return True
+
+
 def shuffleSeq2(fN, outFN):
         
         f = open(fN, 'r')
@@ -189,11 +237,9 @@ def shuffleSeq2(fN, outFN):
                         
                         shuffledSeq = seqShuffle(seq, mask, 1000)
 
-                        if getTotalContigLength(shuffledSeq) < 7:
+                        if passContigFilter(shuffledSeq) < 7:
                                 fOut.write('%s\t%s\n' % (oID, shuffledSeq))
                                 break
-                        else:
-                                pass
 
                         if i == 99:
                                 print 'DID NOT MAKE A SHUFFLE SEQ!!!', seq

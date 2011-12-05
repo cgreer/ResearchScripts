@@ -54,6 +54,28 @@ def quickECDF(fN, columns, properties = '', hist = False, numBins = 100):
         plt.legend()
     plt.show()
 
+@autocast
+def quickPie(fN, column, property = ''):
+    '''hist only works when there is one column...
+    multi columns works only for the same file...'''
+
+    type_count = {}
+    f = open(fN, 'r')
+    for line in f:
+        ls = line.strip().split('\t')
+        theType = ls[column]
+        type_count[theType] = type_count.get(theType, 0) + 1
+    
+    labels = []
+    counts = []
+    for theType, count in type_count.items():
+        labels.append(theType)
+        counts.append(count)
+
+    #plot all ecdfs/hist
+    plt.pie(counts, labels = [str(x) for x in labels])
+    plt.title(property)
+    plt.show()
         
 def quickECDFContext(fN, column, property = ''):
 

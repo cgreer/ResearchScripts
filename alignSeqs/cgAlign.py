@@ -10,6 +10,14 @@ rnaPairsGU = {'A': ['A', 'G'],
               'N':[]
              }
 
+#for plain matches
+rnaPairsGU = {'A': ['A'],
+              'T': ['T'],
+              'C': ['C'],
+              'G': ['G'],
+              'N':[]
+             }
+
 class cgAlignment:
         def __init__(self):
                 self.target = None

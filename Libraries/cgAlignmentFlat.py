@@ -72,8 +72,8 @@ def appendTInfoFlat(aFN, dFN, rn = None, tn = None):
                         aNX.repeat[aID] = dNX.repeatStatus[dID]
                         aNX.gScore[aID] = dNX.gScore[dID]
                         aNX.targetSequence[aID] = dNX.sequence[dID]
-                        aNX.repeatCount[aID] = dNX.repeatCount[dID]
-                        aNX.totalContig[aID] = dNX.totalContig[dID]
+                        #aNX.repeatCount[aID] = dNX.repeatCount[dID]
+                        #aNX.totalContig[aID] = dNX.totalContig[dID]
         aNX.save()                        
 
 def appendTranInfo(aFN, degSmallFN, rn = None, tn = None):

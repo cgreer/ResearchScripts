@@ -1,5 +1,6 @@
 import bioLibCG as cg
 import cgConfig as c
+from cgAutoCast import autocast
 
 def getTccFromSamLine(line):
 	'''SAM has odd formatting at top'''
@@ -155,16 +156,16 @@ def makeWig(fN, assembly, format = None, name = None):
 			
 			#write results to wig file
 			writeWigFromHitDict(hitDict, assembly)
-			
-def makeWigMem(fN, assembly, format = None, name = None, directory = None, degWig = False):
+
+@autocast                        
+def makeWigMem(fN, assembly, format = None, name = None, directory = None, degWig = False, switchStrand = True):
 	'''format assumes bowtie
-	suitible for small mapped files.'''
+	suitible for small mapped files.
+        switch strand does not switch the strands, it just makes sure if the data is backwards (HeLa) that it will 
+        put the peak in the right spot'''
 	
-        if degWig == 'True' or degWig == True:
-                degWig = True
-        else:                
-                degWig = False
         print 'degWig Value', degWig
+        print 'switch strands?', switchStrand
 	if not name: name = cg.getBaseFileName(fN, naked = True)
 	if not format: format = 'Bowtie'
 	parserFunction = returnParserFunction(format)
@@ -187,19 +188,28 @@ def makeWigMem(fN, assembly, format = None, name = None, directory = None, degWi
                         
                         if degWig:
                                 #wig for degradome NOTE:!!! change lStrand == '1' to '-1' for Bracken!
-                                if lStrand == '1':
-                                        i = start + (end - start)
-                                else:
-                                        i = start + 1
-                                        
-                                try:
-                                        hitDict[lChrom][lStrand][i] += 1
-                                except KeyError:
-                                        if lChrom not in hitDict:
-                                                hitDict[lChrom] = {}
-                                        if lStrand not in hitDict[lChrom]:
-                                                hitDict[lChrom][lStrand] = {}
-                                        hitDict[lChrom][lStrand][i] = 1
+                                if switchStrand:
+                                    if lStrand == '1':
+                                            i = start + (end - start)
+                                    else:
+                                            i = start + 1
+                                else:                                            
+                                    if lStrand == '-1':
+                                            i = start + (end - start)
+                                    else:
+                                            i = start + 1
+
+
+                                hitDict.setdefault(lChrom, {}).setdefault(lStrand, {})
+                                hitDict[lChrom][lStrand][i] = hitDict[lChrom][lStrand].get(i, 0) + 1
+                                #try:
+                                        #hitDict[lChrom][lStrand][i] += 1
+                                #except KeyError:
+                                        #if lChrom not in hitDict:
+                                                #hitDict[lChrom] = {}
+                                        #if lStrand not in hitDict[lChrom]:
+                                                #hitDict[lChrom][lStrand] = {}
+                                        #hitDict[lChrom][lStrand][i] = 1
                         else:
 
                                 #wig for regular

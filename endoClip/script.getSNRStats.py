@@ -48,42 +48,31 @@ def totalSNR(oFN):
         print '\n' 
         #print 'stderr(%s)' % n, stdv(simsTotals)/sqrt(10)
 
-def totalSNRSS(oFN):
-        
+def totalSNRSS(oFN, SNRToggle = False):
+       
+        if SNRToggle == 'True':
+            SNRToggle = True
+        else:
+            SNRToggle = False 
+
         oNX = cgNexusFlat.Nexus(oFN, cgOriginRNAFlat.OriginRNA)
         oNX.load(['snrSS', 'numSignificantSequences', 'avgNumSS'])
 
-        totalRun = 0 
-        totalSim = 0
-
-        tRunHigh = 0
-        tSimHigh = 0
-        n = 0
-        highSNR = 0
+        highSNRs = []
         for oID in oNX.snrSS:
                 
-                #collect stats
-                totalRun += oNX.numSignificantSequences[oID]
-                totalSim += oNX.avgNumSS[oID]
-                
-                if oNX.snrSS[oID] > 2:
-                        highSNR += 1
-                        tRunHigh += oNX.numSignificantSequences[oID]
-                        tSimHigh += oNX.avgNumSS[oID]
-                        
-                n +=1
+                snrSS = oNX.snrSS[oID]
+                if snrSS > 2:
+                        highSNRs.append(snrSS)
        
-        #print oFN
-        #print 'Total # Targets data/sim: %s/%s' % (totalRun, totalSim)
-        #print 'SNR:', float(totalRun)/float(totalSim)
-        try:
-                #print 'SNR (iSNR > 2):', float(tRunHigh)/float(tSimHigh)
-                print 'SNR:', float(tRunHigh)/float(tSimHigh)
-        except:
-                print 'SNR: 0.0'
-        #print 'Total oRNA:', n 
-        print '#:', highSNR
-        #print 'stderr(%s)' % n, stdv(simsTotals)/sqrt(10)
+        if SNRToggle:
+            try:
+                    avgSNR = sum(highSNRs)/len(highSNRs)
+                    print avgSNR,
+            except:
+                    print '0.0',
+        else:
+            print len(highSNRs),
 
 if __name__ == "__main__":
         import sys

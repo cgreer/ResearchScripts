@@ -22,7 +22,8 @@ print timer.split()
 
 print '...updating paired interactions:  center expression'
 #splitRun(aFN, 5, '/home/chrisgre/scripts/endoClip/updateMismatchAndMiddleFlat.py', 'markCenterExpression', 'splitFN', '/home/chrisgre/smallLibs/siRNA/degradome/wigsk50')
-splitRun(aFN, 5, '/home/chrisgre/scripts/endoClip/updateMismatchAndMiddleFlat.py', 'markCenterExpression', 'splitFN', '/home/chrisgre/smallLibs/siRNA/degradome/Bracken/wigs/kidney')
+#splitRun(aFN, 5, '/home/chrisgre/scripts/endoClip/updateMismatchAndMiddleFlat.py', 'markCenterExpression', 'splitFN', '/home/chrisgre/smallLibs/siRNA/degradome/HeLa/wigs.3t7n0m20k20b.contigFiltered')
+splitRun(aFN, 5, '/home/chrisgre/scripts/endoClip/updateMismatchAndMiddleFlat.py', 'markCenterExpression', 'splitFN', '/home/chrisgre/data/Lab_Data/U87/result_primary/wigs.n0m20k20b')
 parCleanSplit(aFN, 5)
 print timer.split()
 

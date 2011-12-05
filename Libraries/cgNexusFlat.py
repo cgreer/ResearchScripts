@@ -22,9 +22,8 @@ def lineUpdate(lineData, data, position):
 
 def getNumFileLines(fn):
         print 'getting num file lines'
-	with open(fn) as f:
-		for i, l in enumerate(f):
-			pass
+        for i, l in enumerate(open(fn)):
+            pass
 	return i + 1
 
 def getIDRange(paraInfo, fn):
@@ -133,7 +132,11 @@ class Nexus:
 
 	def load(self, attNames, paraInfo = [None, None]):
                 '''paraInfo is [runNumber, numberOfRuns]'''
-                
+       
+                #t = bioLibCG.cgTimer()
+                #stage_cumTime = dict( (x, 0.0) for x in (''))
+                #t.start()
+
                 if paraInfo == ['splitRun', 'splitRun']:
                         self._splitRunFlag = True
                         paraInfo = [None, None] # now treat paraInfo as if there was nothing...
@@ -161,6 +164,7 @@ class Nexus:
                 if self._packetInfo:
                         dataFile.seekToLineStart(self._packetInfo[0])
 
+                #print 'before loop', t.split()
                 #transcribe values
                 currentID = 0
                 for line in dataFile.file:
@@ -180,15 +184,18 @@ class Nexus:
                                         break
 
 			#transcribe
+                        #Note lots of copying is SLOW (10x)
+                        #only copy if list?
 			for attName in attNames:
-				if self._attName_columnPosition[attName] < numSlots:
-                                        if ls[self._attName_columnPosition[attName]] != '.':
-                                                self._attName_id_value[attName][id] = self._attName_casteFromFxn[attName](ls[self._attName_columnPosition[attName]])
+                                colPosition = self._attName_columnPosition[attName]
+				if colPosition < numSlots:
+                                        if ls[colPosition] != '.':
+                                                self._attName_id_value[attName][id] = self._attName_casteFromFxn[attName](ls[colPosition])
                                         else:
 					        self._attName_id_value[attName][id] = copy(self._attName_defaultValue[attName])
 				else:
 					self._attName_id_value[attName][id] = copy(self._attName_defaultValue[attName])
-
+                #print 'after loop', t.split()
                 dataFile.file.close()
                 
 		#bind attribute names to dictionaries
@@ -196,6 +203,7 @@ class Nexus:
 
                 #bind id attribute to first attribute, they all have the same ids...
                 self.linkIDsToColumn()
+                #print 'finishing stuff', t.split()
 
         def save(self, outFN = None):
 		
