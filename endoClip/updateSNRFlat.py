@@ -47,7 +47,8 @@ def updateAvgNumSS(oFN):
                 #simFN = '/home/chrisgre/scripts/simulations/simsk50FilteredMasked/simulation.%s/%s' % (i, bn)
                 #simFN = '/home/chrisgre/scripts/simulations/simsk50Fix/simulation.%s/%s' % (i, bn)
                 #simFN = '/home/chrisgre/scripts/simulations/mm9/simulation.%s/%s' % (i, bn)
-                simFN = '/home/chrisgre/scripts/simulations/hg19.hela/simulation.%s/%s' % (i, bn)
+                #simFN = '/home/chrisgre/scripts/simulations/hg19.hela/simulation.%s/%s' % (i, bn)
+                simFN = '/home/chrisgre/scripts/simulations/hg19.U87/simulation.%s/%s' % (i, bn)
                 osNX = cgNexusFlat.Nexus(simFN, cgOriginRNAFlat.OriginRNA)
                 osNX.load(['numSignificantSequences'])
                 for oID in osNX.numSignificantSequences:

@@ -254,6 +254,33 @@ class Nexus:
                         f.write('DONE')
                         f.close()
 
+
+        def iDictionary(self, property,  assumeUnique = True):
+            '''get the property --> id dict for the Nexus
+            if assumeUnique dict will not have lists and will give error
+            if there is a non-unique mapping.  If not assuming unique, dict will
+            have a list as value to keys'''
+
+            theProperty = eval('self.%s' % property)
+            iDict = {}
+            for id in self.ids:
+                val = theProperty[id]
+                if val in iDict:
+
+                    if assumeUnique:
+                        raise NameError("Mapping is not 1 to 1!")
+                    else:
+                        iDict[val].append(id)
+                
+                else:
+
+                    if assumeUnique:
+                        iDict[val] = id 
+                    else:
+                        iDict[val] = [id]
+
+            return iDict                
+
 def quickTable(*args):
     '''make a class for nexus to use as table template
     on the fly

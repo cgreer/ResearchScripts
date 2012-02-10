@@ -158,7 +158,7 @@ def makeWig(fN, assembly, format = None, name = None):
 			writeWigFromHitDict(hitDict, assembly)
 
 @autocast                        
-def makeWigMem(fN, assembly, format = None, name = None, directory = None, degWig = False, switchStrand = True):
+def makeWigMem(fN, assembly, format = None, name = None, directory = None, degWig = False, switchStrand = True, normalized = False):
 	'''format assumes bowtie
 	suitible for small mapped files.
         switch strand does not switch the strands, it just makes sure if the data is backwards (HeLa) that it will 
@@ -177,13 +177,16 @@ def makeWigMem(fN, assembly, format = None, name = None, directory = None, degWi
 	#create hitmap of chrom and strand
 	hitDict = {} #format = chr: { strand : { coord : value 
 	for line in f:
-		#try:
                 lChrom, lStrand, start, end = cg.tccSplit(parserFunction(line))
-		#except AttributeError:
-			#continue
 		lStrand = str(lStrand)
 		start = int(start)
 		end = int(end)
+                numPlacesMapped = int(line.strip().split('\t')[6])
+                numPlacesMapped += 1
+                readCount = 1
+                if normalized:
+                    readCount = float(readCount)/numPlacesMapped
+
 		if lChrom in cg.acceptableChroms:
                         
                         if degWig:
@@ -201,27 +204,19 @@ def makeWigMem(fN, assembly, format = None, name = None, directory = None, degWi
 
 
                                 hitDict.setdefault(lChrom, {}).setdefault(lStrand, {})
-                                hitDict[lChrom][lStrand][i] = hitDict[lChrom][lStrand].get(i, 0) + 1
-                                #try:
-                                        #hitDict[lChrom][lStrand][i] += 1
-                                #except KeyError:
-                                        #if lChrom not in hitDict:
-                                                #hitDict[lChrom] = {}
-                                        #if lStrand not in hitDict[lChrom]:
-                                                #hitDict[lChrom][lStrand] = {}
-                                        #hitDict[lChrom][lStrand][i] = 1
+                                hitDict[lChrom][lStrand][i] = hitDict[lChrom][lStrand].get(i, 0) + readCount
                         else:
 
                                 #wig for regular
                                 for i in range(start, end):
                                         try:
-                                                hitDict[lChrom][lStrand][i] += 1
+                                                hitDict[lChrom][lStrand][i] += readCount 
                                         except KeyError:
                                                 if lChrom not in hitDict:
                                                         hitDict[lChrom] = {}
                                                 if lStrand not in hitDict[lChrom]:
                                                         hitDict[lChrom][lStrand] = {}
-                                                hitDict[lChrom][lStrand][i] = 1
+                                                hitDict[lChrom][lStrand][i] = readCount
 
 	f.close()
 	

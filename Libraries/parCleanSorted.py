@@ -12,9 +12,14 @@ def parClean(fN):
         basename = os.path.basename(fN)
 
         #remove the original file
-        os.remove(fN)
+        print '..removing original file, if present'
+        try:
+            os.remove(fN)
+        except OSError:
+            pass
         
         #remove the exit signals
+        print '..removing exit signals'
         for eFN in bioLibCG.recurseDir(dirName, start = basename, end = 'exitSignal'):
                 os.remove(eFN)
 
@@ -23,13 +28,17 @@ def parClean(fN):
         rangeFiles.sort(key = lambda x: int(x.split('.')[-2]))
  
 
+        print '..catting files together'
         f = open(fN, 'w')
         for rFN in rangeFiles:
+                print '....', rFN
                 subprocess.Popen(['cat', rFN], stdout = f).wait()
         f.close()
 
         #remove the range files
+        print '..removing packets'
         for rFN in rangeFiles:
+                print '....', rFN
                 os.remove(rFN)
 
 def parCleanSplit(fN):

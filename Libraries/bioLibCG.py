@@ -16,23 +16,37 @@ acceptableChroms.extend(['chrM', 'chrX', 'chrY', 'chrZ'])
 dnaComp = {'A':'T', 'T':'A', 'G':'C', 'C':'G'}
 
 
-def convertDcdToTcc(dcdList):
-	tccList = []
-	for dcd in dcdList:
-		chr = dcd.strip().split(':')[0]
-		strand = dcd.strip().split(':')[1]
-		if strand == '+':#switch to numbers if they aren't already.
-			strand = '1'
-		elif strand == '-':
-			strand = '-1'
-		start = dcd.strip().split(':')[2].split('-')[0]
-		end = dcd.strip().split(':')[2].split('-')[1]
-		
-		tccList.append('%s:%s:%s:%s' % (chr, strand, start, end))
-		
-	return tccList
-			
-###JUST USE REPLACE FXN: (replace('U','T'))
+def printSeldomly(theString, seconds = 5):
+
+    try:
+        f = open('.%s.timeCheck' % os.getpid(), 'r')
+        lastTime = float(f.readline().strip())
+        f.close()
+    except IOError:
+        lastTime = time.time()
+        f = open('.%s.timeCheck' % os.getpid(), 'w')
+        f.write('%s' % lastTime)
+        f.close()
+
+    #print message if enough time passed
+    newTime = time.time()
+    if (newTime - lastTime) > seconds:
+        print theString
+
+        #update the time
+        f = open('.%s.timeCheck' % os.getpid(), 'w')
+        f.write('%s' % newTime)
+        f.close()
+
+def getDictLeaves(theDict, leaves = []):
+    
+    for v in theDict.values():
+        if isinstance(v, dict):
+            leaves.append(getDictLeaves(v, leaves))
+        else:
+            pass 
+
+
 
 def returnFrames(sequence, frameLength):
 	'''Given a sequence and length of frame, return a list of frames from sequence'''
@@ -231,20 +245,6 @@ def queryJobsDone(parseFileName = None, baseName = None):
 
 	return True
 
-def stripTripleColon(coord = None):
-	
-	if coord is None:
-		print 'failed to pass coordinate'
-		return False
-		
-	coordDict = {}
-	coordDict['chromosome'] = coord.strip().split(':')[0]
-	coordDict['strand'] = coord.strip().split(':')[1]
-	coordDict['start'] = coord.strip().split(':')[2]
-	coordDict['end'] = coord.strip().split(':')[3]
-	
-	return coordDict
-	
 def getURL(url, path, gunzip=True):
 	"Download url to path, extract if needed"
 	try:
@@ -375,24 +375,6 @@ def createHitMap(coordList, multi = True):
 	        	for i in range(int(coordDict['start']), int(coordDict['end'])):
 				hitMap[i] = coord
 	return hitMap
-
-'''def simpleOverlap(s1, e1, s2, e2):
-	if (int(s2) >= int(s1) and (int(s2) <= int(e1))) or ((int(e2) >= int(s1)) and (int(e2) <= int(e1))):
-		return True
-	else:
-		return False
-
-
-def simpleOverlap(s1, e1, s2, e2):
-	s1 = int(s1)
-	e1 = int(e1)
-	s2 = int(s2)
-	e2 = int(e2)
-	if (s1 <= e2) and (e1 >= s2):
-		return True
-	else:
-		return False
-'''
 
 def simpleOverlap(s1, e1, s2, e2):
 	s1 = int(s1)

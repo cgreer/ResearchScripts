@@ -8,7 +8,7 @@ do
 		for c in 50 60 70 80 
 		do
 			echo sim $s $i $c 
-			python pipeline.simulatedLinkFiltered.py /home/chrisgre/scripts/simulations/hg19.hela/simulation.${s}/oRNA.data.1.1.${c}.${i} /home/chrisgre/scripts/simulations/hg19.hela/simulation.${s}/all.aligned.ids.filtered.1.1.${c}.${i} /home/chrisgre/scripts/simulations/hg19.hela/simulation.${s}/oRNA.simSeqs
+			python pipeline.simulatedLinkFiltered.py /home/chrisgre/scripts/simulations/hg19.U87/simulation.${s}/oRNA.data.1.1.${c}.${i} /home/chrisgre/scripts/simulations/hg19.U87/simulation.${s}/all.aligned.ids.filtered.1.1.${c}.${i} /home/chrisgre/scripts/simulations/hg19.U87/simulation.${s}/oRNA.simSeqs
 		done
 	done
 done

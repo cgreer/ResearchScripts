@@ -53,6 +53,26 @@ def addIDs(fN, outFN, header = False, startID = 0):
         f.writelines(newLines)
         f.close()
 
+def addIDsMem(fN, outFN, header = False, startID = 0):
+        '''Add IDs to the first coluimn'''
+        if header == 'True':
+                header = True
+        else:
+                header = False
+        startID = int(startID)
+
+        fO = open(outFN, 'w')
+        f = open(fN, 'r')
+        if header:
+                f.readline()
+        i = startID
+        for line in f:
+                ls = line.strip().split('\t')
+                fO.write('%s\t%s\n' % (i, '\t'.join(ls)))
+                i += 1
+        f.close()
+        fO.close()
+
 def redoIDs(fN, outFN, startID = 0):
         '''Re-add IDs to the first column'''
         startID = int(startID)
