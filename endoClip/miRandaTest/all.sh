@@ -13,7 +13,7 @@ python parse.py makeFAPipeline ~/scripts/endoClip/run.hg19.U87.contigFiltered/dR
 
 
 #[---split into packets, run miRanda on each packet, get discrete ouput---]
-python ~/exec/splitFile.py splitFile run.hg19.U87/small.fa 50 smallPackets 3
+python ~/exec/splitFile.py splitFile run.hg19.U87/small.fa 50 run.hg19.U87/smallPackets 3
 
 #[---run miranda on each packet---]
 echo "running miRanda"
