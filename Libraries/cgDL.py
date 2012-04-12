@@ -30,7 +30,7 @@ def dictFromColumns(fN, keyValCols, keyValTypes, assumeUnique = True):
    
     return key_val
 
-def listFromColumns(fN, columns, valTypes, mergeType = 'lol'):
+def listFromColumns(fN, columns, valTypes, mergeType = 'lol', naToZero = False):
     '''multiple columns should either go into multiple lists (list of lists)
     or merge into the same list
     mergeType = lol or merge (list of list or merge)'''
@@ -48,6 +48,8 @@ def listFromColumns(fN, columns, valTypes, mergeType = 'lol'):
     for line in f:
         ls = line.strip().split('\t')
         for i, colNum in enumerate(columns):
+            if ls[colNum] == "NA":
+                ls[colNum] = "0"
             lol[i].append(colNum_casteFxn[colNum](ls[colNum]))
     f.close()
     

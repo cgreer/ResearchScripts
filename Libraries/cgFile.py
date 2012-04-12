@@ -3,35 +3,48 @@ import math
 import cgMath
 import bioLibCG
 
+def nextFilePacket(fHandler, linesPerPacket):
+    '''useful for fa and fastq etc'''
+
+    nextPacket = [fHandler.readline() for x in range(linesPerPacket)]
+
+    emptyCheck = [x == '' for x in nextPacket]
+    if all(emptyCheck):
+        return None
+    else:
+        return nextPacket
+
 def getPacketInfo(fN, numPackets):
-        #packet info is the (a,b) where a is byte of starting line, and b is id of ending line
-        numPackets = int(numPackets)
-        file = cgFile(fN)
-        splitPoints = [int(math.floor(x)) for x in cgMath.linspace(0, file.fileSize, numPackets + 1)]
-        packetInfo = []
-        idInfo = []
+    #packet info is the (a,b) where a is byte of starting line, and b is id of ending line
+    numPackets = int(numPackets)
+    file = cgFile(fN)
+    splitPoints = [int(math.floor(x)) for x in cgMath.linspace(0, file.fileSize, numPackets + 1)]
+    packetInfo = []
+    idInfo = []
 
-        for packetNumber in range(1, numPackets + 1):
+    for packetNumber in range(1, numPackets + 1):
 
-                #start
-                if  packetNumber == 1:
-                        start = 0
-                else:
-                        start = file.getLineStartByte(splitPoints[packetNumber - 1])
+        #start
+        if  packetNumber == 1:
+            start = 0
+        else:
+            start = file.getLineStartByte(splitPoints[packetNumber - 1])
 
-                #end
-                if packetNumber == numPackets:
-                        #the last packet doesn't have a line that follows it at the end so it is -1
-                        end = -1
-                else:
-                        file.seekToLineStart(splitPoints[packetNumber])
-                        nextLine = file.file.readline()
-                        end = int(nextLine.strip().split('\t')[0])
+        #end
+        if packetNumber == numPackets:
+            #the last packet doesn't have a line that follows it at the end so it is -1
+            end = -1
+        else:
+            file.seekToLineStart(splitPoints[packetNumber])
+            nextLine = file.file.readline()
+            end = int(nextLine.strip().split('\t')[0])
 
 
-                packetInfo.append((start, end))
+        packetInfo.append((start, end))
 
-        return packetInfo                
+    return packetInfo                
+
+
 
 class cgFile:
 	'''return a specific line from an file that is in line form

@@ -162,7 +162,6 @@ def getEntropy(sequence):
 
         return entropy
 
-
 def updateEntropy(oFN, rn = None, tn = None):
 	
         oNX = cgNexusFlat.Nexus(oFN, cgOriginRNAFlat.OriginRNA)

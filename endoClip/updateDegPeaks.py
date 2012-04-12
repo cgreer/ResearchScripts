@@ -3,8 +3,11 @@ import cgDegPeak
 import cgAlignmentFlat
 import cgWig
 import cgNexusFlat
+from cgNexus import Nexus
 import gZipEntropy
+import GenomeFetch
 from cgAutoCast import autocast
+
 
 def updateTcc(oFN, tccFN, rn = None, tn = None):
 
@@ -20,21 +23,23 @@ def updateTcc(oFN, tccFN, rn = None, tn = None):
                 i += 1
 
         oNX.save()
-        
-def updateSequence(oFN, seqFN, rn = None, tn = None):
-        
-        oNX = cgNexusFlat.Nexus(oFN, cgDegPeak.Peak)
-        oNX.load(['sequence'], [rn, tn])
 
-        f = open(seqFN, 'r')
-        i = 0
-        for line in f:
-                ls = line.strip().split('\t')
-                seq = ls[0]
-                oNX.sequence[i] = seq
-                i += 1
+@autocast
+def updateSequence(oFN, oFF, extend, assembly):
+        
+    NX = Nexus(oFN, oFF)
+    NX.load(['sequence', 'tcc'])
+        
+    gf = GenomeFetch.GenomeFetch(assembly)
 
-        oNX.save()
+    while NX.nextID():
+        
+        chrom, strand, start, end = bioLibCG.tccSplit(NX.tcc)
+        start, end = start - extend, end + extend
+        newTcc = bioLibCG.makeTcc(chrom, strand, start, end)
+        NX.sequence = gf.getSequence(newTcc)
+
+    NX.save()
 
 def updateELevel(oFN, wigDir, rn = None, tn = None):
         '''Dont need to do it by chromosome because it is small enough'''
@@ -54,6 +59,46 @@ def updateELevel(oFN, wigDir, rn = None, tn = None):
         
        
         oNX.save()
+
+def updateELevel2(dFN, dForm, wigDir):
+    '''Dont need to do it by chromosome because it is small enough'''
+    '''Also dont need to flip the strand because the wig is opposite as well'''
+
+    NX = Nexus(dFN, dForm)
+    NX.load(['tcc', 'eLevel'])
+    
+    wigDict = cgWig.loadWigDictFloat(wigDir)
+   
+    while NX.nextID():
+        
+        coord_value = cgWig.getExpressionProfile(NX.tcc, wigDict)
+        NX.eLevel = max(coord_value.values())
+
+    NX.save()
+
+@autocast
+def updateGeneName(dFN, fFN, wigDir, chrom, strand, prefix, switchStrand = False):
+
+    NX = Nexus(dFN, fFN)
+    NX.load(['geneNames', 'tcc'])
+
+    if switchStrand:
+        strand = -strand
+
+    strand = str(strand)
+    coord_gName = cgWig.loadSingleWigTranscript(wigDir, chrom, strand, prefix)
+
+    while NX.nextID():
+
+        chrom, strand, start, end = bioLibCG.tccSplit(NX.tcc)
+        
+        overlappingGenes = coord_gName.get(start, ".")
+        if overlappingGenes == "NONE":
+            NX.geneNames = []
+        else:
+            NX.geneNames = overlappingGenes.split(',')
+
+    NX.save()
 
 def updateTOverlapOneRun(oFN, rn = None, tn = None):
         '''Dont need to do it by chromosome because it is small enough'''
@@ -113,16 +158,16 @@ def updateTranscriptOverlap(oFN, wigDir, chrom, strand, rn = None, tn = None):
 
         oNX.save()
 
-def updateContext(oFN, wigDir, chrom, strand, rn = None, tn = None):
+@autocast
+def updateContext(oFN, wigDir, chrom, strand, switchStrand = False):
         
         oNX = cgNexusFlat.Nexus(oFN, cgDegPeak.Peak)
-        oNX.load(['tcc', 'context'], [rn, tn])
+        oNX.load(['tcc', 'context'])
         
-         
-        if strand == '1':
-                strand = '-1'
+        if switchStrand:
+            strand = str(-int(strand))
         else:
-                strand = '1'
+            strand = str(strand)
         
         print 'loading wig'
         coord_contexts = cgWig.loadSingleWigContext(wigDir, chrom, strand, 'context') 
@@ -136,10 +181,10 @@ def updateContext(oFN, wigDir, chrom, strand, rn = None, tn = None):
                 oChrom, oStrand, start, end = bioLibCG.tccSplit(oNX.tcc[oID])
                 
                 #deg wigs is AS to actual clipping site
-                if oStrand == '1':
-                        oStrand = '-1'
+                if switchStrand:
+                    oStrand = str(-int(strand))
                 else:
-                        oStrand = '1'
+                    oStrand = str(oStrand)
         
                 if oChrom == chrom and oStrand == strand:
 
@@ -363,7 +408,6 @@ def updateRepeatStatus(oFN, wigDir, chrom, strand):
         
         #load wig file for chrom, strand
         coord_value = cgWig.loadSingleWig(wigDir, chrom, strand, 'REPEAT')
-
 
         for oID in oNX.repeatStatus:
 

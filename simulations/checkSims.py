@@ -1,6 +1,7 @@
 import bioLibCG
 import cgNexusFlat
 from cgAutoCast import autocast
+from cgFile import nextFilePacket
 
 def checkSims(queryFN, simFN):
     
@@ -21,6 +22,27 @@ def checkSims(queryFN, simFN):
         print id 
         print seq 
         print id_seq2[id]
+
+def checkSimulationSaturation(simFN, outFN):
+    '''simFN is an aggregate of ALL simulations files'''
+
+    with open(simFN, 'r') as f:
+        id_seqSet = {} 
+        while True:
+            nFP = nextFilePacket(f, 3)
+            if nFP == None: break
+            idS, sequence, blank = nFP 
+
+            id = idS.strip()[1:]
+            sequence = sequence.strip()
+            id_seqSet.setdefault(id, set()).add(sequence)
+
+    with open(outFN, 'w') as f:  
+        for id, seqSet in id_seqSet.items():
+            f.write('%s\t%s\n' % (id, len(seqSet))) 
+
+        
+
 
 if __name__ == "__main__":
     import sys

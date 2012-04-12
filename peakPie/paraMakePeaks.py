@@ -7,6 +7,7 @@ import subprocess
 def roofPeakTest(tcc, pRange, minRoofVal, maxAvgNoise, maxDropVal, extend, minPeakLength, maxPeakLength, cName):  	
 	        '''Note: extend does not extend the coordinates into the final tcc, just 
                 used for declaring peak'''
+                coveredStartingPoints = set()
 
                 chrom, strand, peakPosition, end = cg.tccSplit(tcc)
 		cProfile = stepVectorScan.profileAroundPoint(tcc, pRange, cName, ratio = True)
@@ -16,6 +17,7 @@ def roofPeakTest(tcc, pRange, minRoofVal, maxAvgNoise, maxDropVal, extend, minPe
                 rightRange = range(1, pRange)
                 leftRange.reverse() #going from the middle outward
 
+                startFinalE = 0
                 #left
                 startFinal = leftRange[-1]
 		for i in leftRange:
@@ -23,8 +25,10 @@ def roofPeakTest(tcc, pRange, minRoofVal, maxAvgNoise, maxDropVal, extend, minPe
 			        pass
                         else:
                                 startFinal = i + 1
-                                #print 'found left', startFinal, cProfile[i]
+                                startFinalE = cProfile[i]
                                 break
+                
+                endFinalE = 0
                 #right
                 endFinal = rightRange[-1] #this only holds if it extends to the end of the range...
                 for i in rightRange:
@@ -32,7 +36,7 @@ def roofPeakTest(tcc, pRange, minRoofVal, maxAvgNoise, maxDropVal, extend, minPe
                                 pass
                         else:
                                 endFinal = i - 1
-                                #print 'found right', endFinal, cProfile[i]
+                                endFinalE = cProfile[i]
                                 break
 
 	        peakLength = endFinal - startFinal + 1
@@ -41,7 +45,6 @@ def roofPeakTest(tcc, pRange, minRoofVal, maxAvgNoise, maxDropVal, extend, minPe
                 low = startFinal - extend
                 high = endFinal + extend
 
-                print peakLength
                 if low > (1 - pRange) and high < pRange:
                         dropPassL = False
                         dropPassR = False
@@ -58,8 +61,8 @@ def roofPeakTest(tcc, pRange, minRoofVal, maxAvgNoise, maxDropVal, extend, minPe
                                 dropPassR = True
                         
                         if (not dropPassL) or (not dropPassR):
-                                #print 'dropVal Fail', 'dropLeft', 'dropRight'
-                                #print startFinal, endFinal, leftDrop, rightDrop, leftDropPass, rightDropPass 
+                                print 'dropVal Fail', 'dropLeft', 'dropRight'
+                                print startFinal, endFinal, leftDrop, rightDrop, leftDropPass, rightDropPass 
                                 return False
                                         
                 else:
@@ -74,21 +77,23 @@ def roofPeakTest(tcc, pRange, minRoofVal, maxAvgNoise, maxDropVal, extend, minPe
                 lowRange = range(1 - pRange, low)
                 highRange = range(high + 1, pRange)
                 totalLength = len(lowRange) + len(highRange)
-                for i in lowRange:
-                        noiseExpression += cProfile[i]
-                for i in highRange:
-                        noiseExpression += cProfile[i]
-                avgNoise = noiseExpression/float(totalLength)
+                #for i in lowRange:
+                        #noiseExpression += cProfile[i]
+                #for i in highRange:
+                        #noiseExpression += cProfile[i]
+                #avgNoise = noiseExpression/float(totalLength)
+                avgNoise = 0.0
 
 		#filter out peaks that look a certain way.
-		if (minPeakLength < peakLength < maxPeakLength) and (avgNoise < maxAvgNoise):
+                print startFinal, startFinalE, endFinal, endFinalE, peakLength, 
+                goodTcc = cg.makeTcc(chrom, strand, peakPosition + startFinal, peakPosition + endFinal)
+		if (minPeakLength <= peakLength <= maxPeakLength) and (avgNoise < maxAvgNoise):
 		#if (minPeakLength < peakLength < maxPeakLength):
-                        goodTcc = cg.makeTcc(chrom, strand, peakPosition + startFinal, peakPosition + endFinal)
-                        #print '*KEEPER', goodTcc, peakLength, avgNoise
+                        print ' *KEEPER', goodTcc, peakLength, avgNoise, maxAvgNoise
                         return goodTcc
                 else:
                         #print 'bad peak', chrom, strand, peakPosition + startFinal, peakPosition + endFinal
-                        #print 'reason', peakLength, avgNoise
+                        print ' reason', goodTcc, peakLength, avgNoise, maxAvgNoise
                         return False
 
 def extendPeakTest(tcc, pRange, minVal, maxAvgNoise, minPeakLength, maxPeakLength, cName):  	
@@ -135,18 +140,21 @@ def extendPeakTest(tcc, pRange, minVal, maxAvgNoise, minPeakLength, maxPeakLengt
                 lowRange = range(1 - pRange, low)
                 highRange = range(high + 1, pRange)
                 totalLength = len(lowRange) + len(highRange)
-                print totalLength, pRange, low, high, lowRange, highRange, cProfile2[0]
-                for i in lowRange:
-                        noiseExpression += cProfile[i]
-                for i in highRange:
-                        noiseExpression += cProfile[i]
+                #for i in lowRange:
+                        #noiseExpression += cProfile[i]
+                #for i in highRange:
+                        #noiseExpression += cProfile[i]
 
-                try:
-                        avgNoise = noiseExpression/float(totalLength)
-                except:
-                        return False
+                #try:
+                        #avgNoise = noiseExpression/float(totalLength)
+                #except:
+                        #return False
+
+                #!!!GET RID OF NOISE FILTER!!!#
+                avgNoise = 0.0
 
 		#filter out peaks that look a certain way.
+                print totalLength, pRange, low, high, lowRange, highRange, cProfile2[0], avgNoise, maxAvgNoise, avgNoise < maxAvgNoise, peakLength, maxPeakLength
 		if (minPeakLength < peakLength < maxPeakLength) and (avgNoise < maxAvgNoise):
                         goodTcc = cg.makeTcc(chrom, strand, peakPosition + startFinal, peakPosition + endFinal)
                         print '*KEEPER'
@@ -164,12 +172,13 @@ def parallelMakePeaks(tcc, cName, minExpression):
 	peaks.createPeaks(span = 1, minVal = int(minExpression))
         	
 	for x in peaks.peaks:
-
-		print x
+                
+                print ""
+		print chrom, strand, x,
                 
                 newTcc = cg.makeTcc(chrom, strand, x, x + 1)
                 testedPeak = extendPeakTest(newTcc, 20, .2, .05, 0, 6, cName) 
-                #testedPeak = roofPeakTest(newTcc, 30, .85, .9, .2, 6, 17, 24, cName)
+                #testedPeak = roofPeakTest(newTcc, 30, .85, .9, .2, 8, 16, 25, cName)
 
                 if testedPeak:
                         f.write('%s\n' % testedPeak)

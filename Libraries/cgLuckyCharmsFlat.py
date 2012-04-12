@@ -51,6 +51,24 @@ def floatListToString(l):
 def stringToFloatList(s):
 	return [float(x) for x in s.split(',')]
 
+def intListSpaceToString(l):
+    if l:
+        return ' '.join([str(x) for x in l])
+    else:
+        return '.'
+
+def stringToIntListSpace(s):
+        return [int(x) for x in s.split(' ')]
+
+def stringListSpaceToString(l):
+    if l:
+        return ' '.join([str(x) for x in l])
+    else:
+        return '.'
+
+def stringToStringListSpace(s):
+        return [str(x) for x in s.split(' ')]
+
 def returnSelf(s):
 	return s
 
@@ -103,5 +121,17 @@ def getCasteFunction(dataType, fromDB = True):
 			return stringToFloatList
 		else:
 			return floatListToString
+	
+        if dataType == 'stringListSpace':
+		if fromDB:
+			return stringToStringListSpace
+		else:
+			return stringListSpaceToString
+	
+        if dataType == 'intListSpace':
+		if fromDB:
+			return stringToIntListSpace 
+		else:
+			return intListSpaceToString 
 
 

@@ -18,6 +18,24 @@ def loadSingleWig(wigDir, chrom, strand, prefix):
 
         return coord_value
 
+def loadSingleWigFloat(wigDir, chrom, strand, prefix):
+
+        coord_value = {}
+        fN = wigDir + '/%s.%s.%s.wig' % (prefix, chrom, strand)
+        f = open(fN, 'r')
+        f.readline()
+        for line in f:
+                ls = line.strip().split('\t')
+                start, end, expr = int(ls[1]) + 1, int(ls[2]), float(ls[3]) #1BASE
+
+                if expr == 0: continue
+                
+                for i in range(start, end + 1):
+                        coord_value[i] = expr
+        f.close()
+
+        return coord_value
+
 def loadSingleWigContext(wigDir, chrom, strand, prefix):
 
         coord_value = {}
@@ -77,6 +95,29 @@ def loadWigDict(wigDir):
 
         return chr_strand_coord_expr
 
+def loadWigDictFloat(wigDir):
+        '''Wig files in a directory must be a certain file format: NAME.chr.strand.wig'''
+
+        chr_strand_coord_expr = {}
+        
+        for fN in bioLibCG.recurseDir(wigDir, end = '.wig'):
+                chrom, strand = fN.split('/')[-1].split('.')[1], fN.split('/')[-1].split('.')[2]
+
+                chr_strand_coord_expr.setdefault(chrom, {})[strand] = {}
+                f = open(fN, 'r')
+                f.readline() #header
+                for line in f:
+                        ls = line.strip().split('\t')
+                        start, end, expr = int(ls[1]) + 1, int(ls[2]), float(ls[3]) #1BASE
+
+                        if float(expr) == 0.0: continue
+                        
+                        for i in range(start, end + 1):
+                                chr_strand_coord_expr[chrom][strand][i] = expr
+                f.close()
+
+        return chr_strand_coord_expr
+
 
 def getExpressionProfile(tcc, wigDict):
         '''assume 1 based'''
@@ -101,7 +142,6 @@ def getExpressionProfile(tcc, wigDict):
         return coord_value                
 
                                 
-
 if __name__ == "__main__":
         import sys
         if sys.argv[1] == "help":

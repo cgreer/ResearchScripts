@@ -1,41 +1,46 @@
 import random
 import bioLibCG
+from cgNexus import Nexus
+import cgDL
+from cgAutoCast import autocast
+from cgAutoKeyWord import autokey
+from endoShuffle import shuffleMaskedSeq
 
 def kMask(seq, mask, minTimes, kmerLength):
 
-        if not mask:
-                mask = [False for x in seq]
-        #get all di seqs, uniquify
-        kSeqs = bioLibCG.returnFrames(seq, kmerLength)
-        kSeqs = set(kSeqs)
+    if not mask:
+        mask = [False for x in seq]
+    #get all di seqs, uniquify
+    kSeqs = bioLibCG.returnFrames(seq, kmerLength)
+    kSeqs = set(kSeqs)
 
 
-        for kmer in kSeqs:
-                #slides
-                for slide in range(0, kmerLength):
+    for kmer in kSeqs:
+        #slides
+        for slide in range(0, kmerLength):
 
+            sLen = 0
+            for i in range(slide, len(seq), kmerLength):
+
+                try:
+                    if seq[i:i + kmerLength] == kmer:
+                        sLen += 1
+                    else:
+                        #if stretch is long enough, mask
+                        if sLen >= minTimes:
+                            maskStart = i - (kmerLength * sLen)
+                            for i in range(maskStart, i): mask[i] = True
+                            sLen = 0
+                        else:
+                            sLen = 0
+                except IndexError:
+                    #check for masking
+                    if sLen > minTimes:
+                        maskStart = i - (kmerLength * sLen)
+                        for i in range(maskStart, i): mask[i] = True
                         sLen = 0
-                        for i in range(slide, len(seq), kmerLength):
-
-                                try:
-                                        if seq[i:i + kmerLength] == kmer:
-                                                sLen += 1
-                                        else:
-                                                #if stretch is long enough, mask
-                                                if sLen >= minTimes:
-                                                        maskStart = i - (kmerLength * sLen)
-                                                        for i in range(maskStart, i): mask[i] = True
-                                                        sLen = 0
-                                                else:
-                                                        sLen = 0
-                                except IndexError:
-                                        #check for masking
-                                        if sLen > minTimes:
-                                                maskStart = i - (kmerLength * sLen)
-                                                for i in range(maskStart, i): mask[i] = True
-                                                sLen = 0
-        
-        return mask
+    
+    return mask
 
 def getLongestRepeat(seq, minTimes, kmerLength):
     
@@ -69,12 +74,30 @@ def getLongestRepeat(seq, minTimes, kmerLength):
     
     return highestSLen
 
-def multiMask(seq, mask = []):
+def maskAll(fN):
+
+    allSeqs = cgDL.listFromColumns(fN, [2], ['string'])
+    allMasks = [multiMask(x, list(), True) for x in allSeqs]
+    
+
+def multiMask(seq, mask = [], toPrint = False):
+     
+        toPrint = True if toPrint == 'True' else False
+        mask = mask if mask != '.' else []
+        
         mask = kMask(seq, mask, 5, 1)
+        #print '   mask 1', mask
         mask = kMask(seq, mask, 3, 2)
+        #print '   mask 2', mask
         mask = kMask(seq, mask, 2, 3)
+        #print '   mask 3', mask
         mask = kMask(seq, mask, 2, 4)
+        #print '   mask 4', mask
         mask = kMask(seq, mask, 2, 5)
+        #print '   mask 5', mask
+
+        if toPrint:
+            print ''.join(['X' if x else '_' for x in mask])
         return mask
 
 class Sequence:
@@ -161,10 +184,8 @@ class Sequence:
 
                 return True
 
-
 def getTotalContigLength(seq):
 
-        
         highestLength = 1
         cLength = 1
         letters = list(seq)
@@ -180,34 +201,30 @@ def getTotalContigLength(seq):
         
         return highestLength
 
-
-
-
 def seqShuffle(seq, mask, timesShuffled = 1):
 
-        seqL = len(seq)
-        numFalseShuffles = 0
-        for i in xrange(0, timesShuffled):
-                
-                #first choose a starting mer/nt to swap
-                ntStart = random.randint(0, seqL - 1)                
-                ntEnd = random.randint(0, seqL - 1)# pick so that the end of mer is not beyond end of sequence
+    seqL = len(seq)
+    numFalseShuffles = 0
+    for i in xrange(0, timesShuffled):
+            
+        #first choose a starting mer/nt to swap
+        ntStart = random.randint(0, seqL - 1)                
+        ntEnd = random.randint(0, seqL - 1)# pick so that the end of mer is not beyond end of sequence
 
-                #check to see if the swap position is off limits
-                if mask[ntStart] or mask[ntEnd]:
-                        numFalseShuffles +=1
-                        continue
+        #check to see if the swap position is off limits
+        if mask[ntStart] or mask[ntEnd]:
+            numFalseShuffles +=1
+            continue
 
 
-                #if it passed, then go ahead and make the swap + change the mer positions
-                seq = list(seq)
-                seq[ntStart], seq[ntEnd] = seq[ntEnd], seq[ntStart]
-                seq = ''.join(seq)
-        
-        
-        if numFalseShuffles/float(timesShuffled) > .90: print '..low efficiency shuffle:', seq, numFalseShuffles, timesShuffled
-        return seq
-
+        #if it passed, then go ahead and make the swap + change the mer positions
+        seq = list(seq)
+        seq[ntStart], seq[ntEnd] = seq[ntEnd], seq[ntStart]
+        seq = ''.join(seq)
+    
+    
+    if numFalseShuffles/float(timesShuffled) > .90: print '..low efficiency shuffle:', seq, numFalseShuffles, timesShuffled
+    return seq
 
 def passContigFilter(seq):
     
@@ -221,31 +238,75 @@ def passContigFilter(seq):
     else:
         return True
 
+def maskCGs(seq, mask = []):
+    '''Think it's faster than regex even though a little crude'''
 
-def shuffleSeq2(fN, outFN):
+    if not mask:
+        mask = [False for x in range(len(seq))]
+
+    seqLength = len(seq)
+
+    #first frame
+    for i, let in enumerate(seq):
+        if i == seqLength - 1: continue
+
+        if seq[i:i+2] == 'CG':
+            mask[i] = True
+            mask[i + 1] = True
+    
+    
+    #2nd frame
+    for i, let in enumerate(seq[1:]):
+        if i == seqLength - 2: continue
+
+        if seq[i:i+2] == 'CG':
+            mask[i + 1] = True
+            mask[i + 2] = True
+
+    return mask
+
+@autocast
+def shuffleSeq2(fN, outFN, fasta = True):
         
-        f = open(fN, 'r')
-        fOut = open(outFN, 'w')
-      
-        for line in f:
-                ls = line.strip().split('\t')
-                
-                oID = ls[0]
-                seq = ls[1]
-                mask = multiMask(seq, [])
-                for i in range(100):
-                        
-                        shuffledSeq = seqShuffle(seq, mask, 1000)
+    f = open(fN, 'r')
+    fOut = open(outFN, 'w')
+    
+    for line in f:
+        ls = line.strip().split('\t')
+        oID = ls[0]
+        seq = ls[1]
+        
+        #have to convert 
+        seq = seq.replace("T", "U")
+       
+        #mask the sequence for repeats, if everything is masked than mark bad egg
+        mask = multiMask(seq, [])
+        if all(mask):
+            print oID, "is not shufflin'....everyday"
+            continue
+        
+        #try to shuffle up to 100 times
+        for i in range(100):
+            shuffledSeq = shuffleMaskedSeq(seq, mask)
+            if passContigFilter(shuffledSeq):
 
-                        if passContigFilter(shuffledSeq) < 7:
-                                fOut.write('%s\t%s\n' % (oID, shuffledSeq))
-                                break
+                #revert 
+                shuffledSeq = shuffledSeq.replace("U", "T")
 
-                        if i == 99:
-                                print 'DID NOT MAKE A SHUFFLE SEQ!!!', seq
+                #output correct format
+                if fasta:
+                    fOut.write('>%s\n%s\n\n' % (oID, shuffledSeq))
+                else:
+                    fOut.write('%s\t%s\n' % (oID, shuffledSeq))
 
-        f.close()
-        fOut.close()
+                #no need to reshuffle
+                break
+
+            if i == 99:
+                print oID, "is not shufflin'....everyday"
+
+    f.close()
+    fOut.close()
 
 def shuffleSeq(fN, outFN):
 

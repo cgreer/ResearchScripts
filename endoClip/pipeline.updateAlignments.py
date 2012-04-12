@@ -13,7 +13,6 @@ dFN = sys.argv[2]
 timer = bioLibCG.cgTimer()
 timer.start()
 
-
 #initializing alignments
 print '...appending T Info'
 parRun(5, 3, '/home/chrisgre/myLibs/cgAlignmentFlat.py', 'appendTInfoFlat', aFN, dFN)

@@ -50,15 +50,13 @@ def getDictLeaves(theDict, leaves = []):
 
 def returnFrames(sequence, frameLength):
 	'''Given a sequence and length of frame, return a list of frames from sequence'''
-	
 	#check for idiots
-	if frameLength > len(sequence):
-		print 'the length of the frame is larger than the sequence itself!!!'
-		return 1
+        assert frameLength <= len(sequence), "length of frame must be less than sequence," + sequence 
+        if len(sequence) == frameLength:
+            return [sequence]
 	
 	frames = []
 	i = 0
-	
 	while (i+frameLength) < (len(sequence)+1):
 		frames.append(sequence[i:(i + frameLength)])
 		i = i + 1

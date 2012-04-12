@@ -3,6 +3,26 @@ import cgNexusFlat
 import cgOriginRNAFlat
 import cgAlignmentFlat
 
+def updateSSNew(oFN, oFF, aFN, aFF):
+
+    NX = Nexus(oFN, oFF)
+    NX.load(['filteredTargets', 'numSS'])
+
+    aNX = Nexus(aFN, aFF)
+    aNX.load(['sigMask'])
+
+    while NX.nextID():
+
+        maskSet = set()
+
+        for aID in NX.filteredTargets:
+            aNX.id = aID
+            maskSet.add(aNX.sigMask)
+
+        NX.numSS = len(maskSet)
+
+    NX.save()
+
 def updateSignificantSequences(oFN, aFN, rn = None, tn = None):
 
         oNX = cgNexusFlat.Nexus(oFN, cgOriginRNAFlat.OriginRNA)

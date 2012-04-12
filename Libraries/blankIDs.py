@@ -16,7 +16,24 @@ def blankIDs(fN, outFN, numIDs = None):
         f = open(outFN, 'w')
         f.writelines(newLines)
         f.close()
-        
+
+def add_blank_column(fN, outFN, position = None):
+    '''add a blank column of "." BEFORE zero based position.  if position is None than
+    add it to last column'''
+    position = int(position) if position != None else None
+
+    with open(fN, 'r') as f:
+        with open(outFN, 'w') as outF:
+            for line in f:
+                ls = line.strip().split('\t')
+                if not position:
+                    ls.append('.')
+                else:
+                    ls.insert(position, '.')
+                outF.write('\t'.join(ls) + '\n')
+                    
+
+
 def copyIDs(fN, outFN):
 
         fOut = open(outFN, 'w')
@@ -93,6 +110,21 @@ def redoIDs(fN, outFN, startID = 0):
         f.writelines(newLines)
         f.close()
 
+def redoIDsMem(fN, outFN, startID = 0):
+        '''Re-add IDs to the first column'''
+        startID = int(startID)
+
+        fO = open(outFN, 'w')        
+        f = open(fN, 'r')
+        i = startID
+        for line in f:
+                ls = line.strip().split('\t')
+                ls[0] = str(i)
+                fO.write('%s\n' % ('\t'.join(ls)))
+                i += 1
+
+        f.close()
+        fO.close()
 
 
 if __name__ == "__main__":

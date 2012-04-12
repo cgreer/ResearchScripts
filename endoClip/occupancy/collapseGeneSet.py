@@ -38,8 +38,6 @@ def createCollapsedGeneSets(tranFN, outFN, acceptableTypes = 'EXON', onlyCoding 
             iEnd = exonPairs[i][0] - 1
             intronPairs.append((iStart, iEnd))
             i += 1
-
-
         
         #take care of messy UTRs and assign utr ranges
         #5UTR
@@ -75,16 +73,16 @@ def createCollapsedGeneSets(tranFN, outFN, acceptableTypes = 'EXON', onlyCoding 
 
         geneName_info.setdefault(geneName, set()).add((tChrom, tStrand))
         pairs__type = [ (exonPairs, 'EXON'), (intronPairs, 'INTRON'), (utr5, '5UTR'), (utr3, '3UTR') ]
+
         for pairs, type in pairs__type:
             for pair in pairs:
                 if type in acceptableTypes:
-                    
+                   
                     if onlyCoding and not codingStatus: continue
 
                     #create geneset/info if does not exist
                     if geneName not in geneName_intervalSet:
                         geneName_intervalSet[geneName] = IntervalSet()
-
 
                     geneName_intervalSet[geneName].add(Interval(pair[0], pair[1] + 1))
 
@@ -92,6 +90,7 @@ def createCollapsedGeneSets(tranFN, outFN, acceptableTypes = 'EXON', onlyCoding 
         if len(info) > 1:
             if geneName in geneName_intervalSet:
                 del geneName_intervalSet[geneName] # if it spans different chromosomes/strands...
+                print geneName, info, 'FAILED'
 
     fOut = open(outFN, 'w')
     for geneName, iSet in geneName_intervalSet.iteritems():
@@ -105,10 +104,40 @@ def createCollapsedGeneSets(tranFN, outFN, acceptableTypes = 'EXON', onlyCoding 
         chrom, strand = geneName_info[geneName].pop()
         outString = [geneName, chrom, strand, ','.join([str(x) for x in gStarts]), ','.join([str(x) for x in gEnds])]             
         fOut.write('\t'.join([str(x) for x in outString]) + '\n')
-            
-
-
     fOut.close()
+
+def reAnnotateGeneNames(fN, outFN):
+    '''some gene names are on different chrom/strand so give them
+    names with suffix (_RE_chr_strand)...'''
+
+    #get counts
+    geneName_count = {}
+    f = open(fN, 'r')
+    for line in f:
+        ls = line.strip().split('\t')
+        geneName = ls[0]
+        geneName_count[geneName] = geneName_count.get(geneName, 0) + 1
+    f.close()
+    
+    #check if multiple/add names 
+    fOut = open(outFN, 'w')
+    f = open(fN, 'r')
+    for line in f:
+        ls = line.strip().split('\t')
+        geneName = ls[0]
+        chrom, strand = ls[1], ls[2]
+        
+        numGeneCopies = geneName_count[geneName]
+        if numGeneCopies > 1:
+            ls[0] = ls[0] + '_RE_%s_%s' % (chrom, strand)     
+            newLine = '\t'.join(ls) + '\n'
+            fOut.write(newLine)
+        else:
+            fOut.write(line)
+
+    f.close()
+    fOut.close()
+    
 
 if __name__ == "__main__":
     import sys

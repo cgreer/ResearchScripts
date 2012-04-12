@@ -22,6 +22,7 @@ help_string = """
       -f     : from coordinate (1-based, both ends inclusive)
       -t     : to coordinate (1-based, both ends inclusive)
       -s    : strand (e.g. 1 or -1)
+      -l    : tcc (cg Version)
       \n""" % _version
 
 import os, sys
@@ -235,10 +236,15 @@ if __name__=='__main__':
     opts.add_option('-s','--seq-strand', dest='strand')    
     opts.add_option('-f','--seq-from', dest='coordFrom')        
     opts.add_option('-t','--seq-to',  dest='coordTo')    
+    opts.add_option('-l','--tcc',  dest='theTcc')    
 
     (options, args) = opts.parse_args()
-    if options.chromosome is None or options.coordFrom is None or options.coordTo is None:
+    if options.theTcc:
+        gf = GenomeFetch(species=options.species)
+        gf.getSequence(options.theTcc)
+    elif options.chromosome is None or options.coordFrom is None or options.coordTo is None:
         help()
+        
     else:
         gf = GenomeFetch(species=options.species)
         print gf.get_seq_from_to(options.chromosome,

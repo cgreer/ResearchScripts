@@ -10,29 +10,57 @@ import math
 import numpy
 from cgAutoCast import autocast
 
+@autocast
+def logColumn(fN, column, outFN, negative = False):
+    
+    with open(fN, 'r') as f:
+        with open(outFN, 'w') as fOut:
+            for line in f:
+                ls = line.strip().split('\t')
+                try:
+                    if negative:
+                        ls[column] = str(-math.log(float(ls[column]), 10))
+                    else:
+                        ls[column] = str(math.log(float(ls[column]), 10))
+                        
+                except ValueError:
+                    pass #just print out what was there
+
+                fOut.write('\t'.join(ls) + '\n')
+
+
 
 @autocast
 def quickECDF(fN, columns, properties = '', hist = False, numBins = 100):
     '''hist only works when there is one column...
     multi columns works only for the same file...'''
 
+    #look for log 
     try:
-        columns = [int(x) for x in columns.split(',')]
+        logColumns = [True if "l" in x else False for x in columns.split(',')]
+    except AttributeError:
+        logColumns = [False]
+    
+    try:
+        columns = [int(x.replace("l", "")) for x in columns.split(',')]
         properties = [x for x in properties.split(',')]
     except:
         columns = [int(columns)]
         properties = [properties]
+
+    print columns, properties
 
     #collect all values
     column_values = {} 
     f = open(fN, 'r')
     for line in f:
         ls = line.strip().split('\t')
-        for column in columns:
+        for i, column in enumerate(columns):
             try:
-                column_values.setdefault(column, []).append(float(ls[column]))
+                aVal = math.log(float(ls[column]), 10) if logColumns[i] else float(ls[column])
+                column_values.setdefault(column, []).append(aVal)
             except IndexError:
-                pass
+                print "IndexError"
         
     sortedKeys = column_values.keys()
     sortedKeys.sort()
@@ -144,8 +172,6 @@ def quickSummary(fN, columns, properties = ''):
         print ' Kurt', theKurt
         print ' Percentiles', cumFreqs
 
-
-
 @autocast
 def quickPlot(fN, columns, properties = ''):
     '''hist only works when there is one column...
@@ -173,6 +199,33 @@ def quickPlot(fN, columns, properties = ''):
     for i, col in enumerate(sortedKeys):
         
         plt.plot(column_values[col], label = properties[i])
+
+    plt.xlabel('plot for %s' % properties)
+    plt.legend()
+    plt.show()
+
+@autocast
+def quickScatter(fN, columns, properties = ''):
+    '''use two columns (first(x), second(y)) at a time to scatter'''
+
+    try:
+        columns = [int(x) for x in columns.split(',')]
+        properties = [x for x in properties.split(',')]
+    except:
+        columns = [int(columns)]
+        properties = [properties]
+
+    #collect all values
+    print columns
+    column_values = {} 
+    f = open(fN, 'r')
+    for line in f:
+        ls = line.strip().split()
+        for column in columns:
+            column_values.setdefault(column, []).append(float(ls[column]))
+        
+    #plot for scatter 
+    plt.scatter(column_values[0], column_values[1])
 
     plt.xlabel('plot for %s' % properties)
     plt.legend()

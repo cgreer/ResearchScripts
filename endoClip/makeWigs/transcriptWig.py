@@ -96,17 +96,18 @@ def makeGeneWig(tranFN, wigDir, chrom, strand):
                 if tChrom != chrom or tStrand != strand:
                         continue
                 gID = ls[10]
+                #gID = gID.replace(" ", "_")
                 tStart, tEnd = int(ls[3]), int(ls[4]) - 1
 
                 for i in xrange(tStart, tEnd + 1):
-                        coord_id[i] = coord_id.get(i, '')  + '%s ' % gID
+                        coord_id[i] = coord_id.get(i, '')  + '%s$' % gID #$ is used because of spaces
 
         #unique, string
         for i, ids in coord_id.iteritems():
-                coord_id[i] = ','.join([x for x in set(ids.strip().split(' '))])
+                coord_id[i] = ','.join([x for x in set(ids.strip().split('$')) if x != ''])
 
         #write wig to file                
-        writeWigDictToWig(coord_id, chrom, strand, 'hg19', 'transcript', wigDir, 'None')       
+        writeWigDictToWig(coord_id, chrom, strand, 'hg19', 'ALL', wigDir, 'None')       
 
 def makeContextWig(tranFN, wigDir, chrom, strand, species = 'hg19'):
 
